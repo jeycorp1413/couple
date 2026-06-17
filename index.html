@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>정용 ♥ 지영 — 우리 캘린더</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#e26d92">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="우리 캘린더">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <style>
   :root{
@@ -41,6 +49,15 @@
 
   .card{background:var(--card); border-radius:18px; padding:16px; margin-bottom:16px; box-shadow:0 3px 14px rgba(150,120,140,.07);}
   .sec-title{font-weight:800; font-size:16px; margin:0 0 12px; display:flex; align-items:center; gap:7px;}
+  .mini-add{margin-left:auto; border:1.5px solid var(--pink); background:#fff; color:var(--pink-deep); font:inherit; font-size:12.5px; font-weight:700; border-radius:999px; padding:5px 12px; cursor:pointer;}
+  .anniv{display:flex; align-items:center; gap:10px; padding:10px 2px; border-bottom:1px solid #f6ecf2;}
+  .anniv:last-child{border-bottom:0;}
+  .anniv .al{flex:1; font-size:14.5px; font-weight:600;}
+  .anniv .al small{font-weight:400; color:#b6a3ae; font-size:12px;}
+  .anniv .ad{font-size:15px; font-weight:800; color:var(--pink-deep); white-space:nowrap;}
+  .anniv .ax{border:0; background:none; color:#d6bcc8; cursor:pointer; font-size:14px;}
+  .chkrow{display:flex !important; align-items:center; gap:8px; font-size:13.5px; color:#7a6670; margin-top:14px;}
+  .chkrow input{width:18px; height:18px;}
 
   /* calendar */
   .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;}
@@ -138,6 +155,12 @@
 
   <div class="marks" id="marks"></div>
 
+  <!-- 기념일·생일 -->
+  <div class="card">
+    <div class="sec-title">🎂 기념일 · 생일 <button class="mini-add" id="annivAdd">+ 추가</button></div>
+    <div id="annivList"></div>
+  </div>
+
   <!-- calendar -->
   <div class="card">
     <div class="cal-head">
@@ -155,6 +178,16 @@
     <div class="irow">
       <input type="text" id="todoText" placeholder="같이 할 일을 적어보세요…">
       <button class="add" id="todoAdd">추가</button>
+    </div>
+  </div>
+
+  <!-- 위시리스트 -->
+  <div class="card">
+    <div class="sec-title">🌟 가고싶은 곳 · 하고싶은 것</div>
+    <div id="wishList"></div>
+    <div class="irow">
+      <input type="text" id="wishText" placeholder="가보고 싶은 곳, 하고 싶은 것…">
+      <button class="add" id="wishAdd">추가</button>
     </div>
   </div>
 
@@ -200,6 +233,20 @@
   </div>
 </div>
 
+<!-- anniversary modal -->
+<div class="ov" id="annivOv">
+  <div class="modal">
+    <h3>기념일 · 생일 추가</h3>
+    <div class="msub">사귄 날 말고도 챙기고 싶은 날을 등록하세요</div>
+    <label>이름</label>
+    <input type="text" id="annivLabel" placeholder="예: 지영 생일, 첫 데이트, 첫 여행">
+    <label>날짜</label>
+    <input type="date" id="annivDate">
+    <label class="chkrow"><input type="checkbox" id="annivYearly" checked> 매년 반복 (생일·기념일)</label>
+    <div class="mbtns"><button class="btn ghost" id="annivCancel">취소</button><button class="btn" id="annivSave">추가</button></div>
+  </div>
+</div>
+
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
@@ -235,7 +282,7 @@ const HOLIDAYS = {
   "2027-12-25":"성탄절","2027-12-27":"대체공휴일",
 };
 let SET = {a:"지영", b:"정용", anniv:"2026-06-11"};
-let EVENTS=[], TODOS=[], MEMOS=[];
+let EVENTS=[], TODOS=[], MEMOS=[], ANNIVS=[], WISHES=[];
 let evWho="a", memoWho="a";
 const now=new Date();
 let viewY=now.getFullYear(), viewM=now.getMonth();
@@ -392,6 +439,56 @@ function addTodo(){ const t=document.getElementById("todoText").value.trim(); if
   document.getElementById("todoText").value="";
 }
 
+/* ---- 기념일·생일 ---- */
+function annivNext(a){
+  const base=parseD(a.date), today=midnight(new Date());
+  let next = a.yearly ? new Date(today.getFullYear(), base.getMonth(), base.getDate()) : base;
+  if(a.yearly && midnight(next)<today) next=new Date(today.getFullYear()+1, base.getMonth(), base.getDate());
+  return {next:midnight(next), left:Math.round((midnight(next)-today)/DAY)};
+}
+function renderAnnivs(){
+  const box=document.getElementById("annivList");
+  if(!ANNIVS.length){ box.innerHTML='<div class="empty">+ 추가를 눌러 생일·기념일을 등록해보세요</div>'; return; }
+  const arr=ANNIVS.map(a=>Object.assign({},a,annivNext(a))).filter(a=>a.yearly||a.left>=0).sort((x,y)=>x.left-y.left);
+  box.innerHTML="";
+  arr.forEach(a=>{ const r=document.createElement("div"); r.className="anniv";
+    const dd=a.left===0?"오늘🎉":"D-"+a.left;
+    r.innerHTML='<span class="al">'+esc(a.label)+' <small>'+ymd(a.next).slice(5).replace("-",".")+(a.yearly?" · 매년":"")+'</small></span><span class="ad">'+dd+'</span>';
+    const x=document.createElement("button"); x.className="ax"; x.textContent="✕";
+    x.onclick=()=>{ if(db&&a.id) db.ref(ROOT+"/anniversaries/"+a.id).remove(); };
+    r.appendChild(x); box.appendChild(r);
+  });
+}
+function openAnniv(){ document.getElementById("annivLabel").value=""; document.getElementById("annivDate").value=""; document.getElementById("annivYearly").checked=true; document.getElementById("annivOv").classList.add("open"); }
+function saveAnniv(){
+  const label=document.getElementById("annivLabel").value.trim();
+  const date=document.getElementById("annivDate").value;
+  const yearly=document.getElementById("annivYearly").checked;
+  if(!label||!date){ alert("이름과 날짜를 입력해주세요"); return; }
+  if(db) db.ref(ROOT+"/anniversaries").push({label, date, yearly, t:Date.now()});
+  document.getElementById("annivOv").classList.remove("open");
+}
+
+/* ---- 위시리스트 ---- */
+function renderWishes(){
+  const box=document.getElementById("wishList");
+  if(!WISHES.length){ box.innerHTML='<div class="empty">가고 싶은 곳, 하고 싶은 것을 적어보세요!</div>'; return; }
+  box.innerHTML="";
+  WISHES.sort((a,b)=>(a.t||0)-(b.t||0)).forEach(t=>{
+    const r=document.createElement("div"); r.className="todo"+(t.done?" done":"");
+    const c=document.createElement("div"); c.className="chk"; c.textContent=t.done?"✓":"";
+    c.onclick=()=>{ if(db&&t.id) db.ref(ROOT+"/wishes/"+t.id+"/done").set(!t.done); };
+    const tx=document.createElement("div"); tx.className="tx"; tx.textContent=t.text;
+    const x=document.createElement("button"); x.className="del"; x.textContent="✕";
+    x.onclick=()=>{ if(db&&t.id) db.ref(ROOT+"/wishes/"+t.id).remove(); };
+    r.append(c,tx,x); box.appendChild(r);
+  });
+}
+function addWish(){ const t=document.getElementById("wishText").value.trim(); if(!t) return;
+  if(db) db.ref(ROOT+"/wishes").push({text:t, done:false, t:Date.now()});
+  document.getElementById("wishText").value="";
+}
+
 /* ---- memo ---- */
 function renderMemos(){
   const box=document.getElementById("memoList");
@@ -427,7 +524,7 @@ function saveSet(){
   document.getElementById("setOv").classList.remove("open");
 }
 
-function refreshAll(){ renderDday(); renderCal(); renderTodos(); renderMemos(); renderMemoWho();
+function refreshAll(){ renderDday(); renderAnnivs(); renderCal(); renderTodos(); renderWishes(); renderMemos(); renderMemoWho();
   document.querySelector(".top h1").innerHTML='<span class="y">'+esc(SET.b)+'</span> ♥ <span class="h">'+esc(SET.a)+'</span>';
 }
 
@@ -439,10 +536,15 @@ document.getElementById("todoAdd").onclick=addTodo;
 document.getElementById("todoText").addEventListener("keydown",e=>{ if(e.key==="Enter") addTodo(); });
 document.getElementById("memoAdd").onclick=addMemo;
 document.getElementById("memoText").addEventListener("keydown",e=>{ if(e.key==="Enter") addMemo(); });
+document.getElementById("wishAdd").onclick=addWish;
+document.getElementById("wishText").addEventListener("keydown",e=>{ if(e.key==="Enter") addWish(); });
+document.getElementById("annivAdd").onclick=openAnniv;
+document.getElementById("annivCancel").onclick=()=>document.getElementById("annivOv").classList.remove("open");
+document.getElementById("annivSave").onclick=saveAnniv;
 document.getElementById("gearBtn").onclick=openSet;
 document.getElementById("setClose").onclick=()=>document.getElementById("setOv").classList.remove("open");
 document.getElementById("setSave").onclick=saveSet;
-[["dayOv"],["setOv"]].forEach(([id])=>{ document.getElementById(id).onclick=e=>{ if(e.target.id===id) document.getElementById(id).classList.remove("open"); }; });
+[["dayOv"],["setOv"],["annivOv"]].forEach(([id])=>{ document.getElementById(id).onclick=e=>{ if(e.target.id===id) document.getElementById(id).classList.remove("open"); }; });
 
 /* ---- start / sync ---- */
 function start(){
@@ -456,6 +558,8 @@ function start(){
   db.ref(ROOT+"/events").on("value",s=>{ const v=s.val()||{}; EVENTS=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderCal(); if(curDay&&document.getElementById("dayOv").classList.contains("open")) renderDayList(); });
   db.ref(ROOT+"/todos").on("value",s=>{ const v=s.val()||{}; TODOS=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderTodos(); });
   db.ref(ROOT+"/memos").on("value",s=>{ const v=s.val()||{}; MEMOS=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderMemos(); });
+  db.ref(ROOT+"/anniversaries").on("value",s=>{ const v=s.val()||{}; ANNIVS=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderAnnivs(); });
+  db.ref(ROOT+"/wishes").on("value",s=>{ const v=s.val()||{}; WISHES=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderWishes(); });
   setInterval(renderDday, 60000);
 }
 start();
