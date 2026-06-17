@@ -101,7 +101,8 @@
   .dayev{display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid #f6ecf2; font-size:14px;}
   .dayev .dot{width:9px; height:9px; border-radius:50%; flex:none;}
   .dayev .dt{flex:1;} .dayev .dx{border:0; background:none; color:#d6bcc8; cursor:pointer; font-size:14px;}
-  .catgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:4px;}
+  .catgrid{display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-top:4px;}
+  .subbtn.full{width:100%; margin-top:8px;}
   .catbtn{border:1.5px solid var(--line); background:#fff; border-radius:14px; padding:14px 6px; font:inherit; font-size:13.5px; font-weight:700; color:#7a6670; cursor:pointer; display:flex; flex-direction:column; gap:5px; align-items:center;}
   .catbtn .ce{font-size:23px;}
   .catbtn:active{background:#fbeef4; border-color:var(--pink);}
@@ -218,7 +219,7 @@ let db=null;
 
 /* ---- state ---- */
 const COL = {a:"#e26d92", b:"#5b8fd6", both:"#b48ad6"};
-const CATS = [{k:"date",e:"💕",l:"데이트"},{k:"exercise",e:"💪",l:"운동"},{k:"meet",e:"🤝",l:"약속"}];
+const CATS = [{k:"date",e:"💕",l:"데이트"},{k:"exercise",e:"💪",l:"운동"},{k:"meet",e:"🤝",l:"약속"},{k:"trip",e:"✈️",l:"출장"}];
 /* 한국 공휴일 (2026·2027) — 토·일은 코드에서 자동 빨강 처리 */
 const HOLIDAYS = {
   "2026-01-01":"신정","2026-02-16":"설날","2026-02-17":"설날","2026-02-18":"설날",
@@ -304,6 +305,7 @@ function catLabel(e){
   if(e.cat==="date") return "💕 데이트";
   if(e.cat==="exercise") return "💪 운동";
   if(e.cat==="meet") return "🤝 약속·"+(e.meet==="mixed"?"이성":"동성")+(e.place?(" 📍"+e.place):"");
+  if(e.cat==="trip") return "✈️ 출장"+(e.time?(" "+e.time):"")+(e.place?(" 📍"+e.place):"");
   return e.title||"일정"; /* 옛 자유입력 일정 호환 */
 }
 function openDay(ds){ curDay=ds; const dt=parseD(ds);
@@ -331,7 +333,7 @@ function renderCats(){
   document.getElementById("subMeet").style.display="none";
   CATS.forEach(c=>{ const b=document.createElement("button"); b.className="catbtn";
     b.innerHTML='<span class="ce">'+c.e+'</span>'+c.l;
-    b.onclick=()=>{ if(c.k==="meet") showMeetSub(); else addCat(c.k,null); };
+    b.onclick=()=>{ if(c.k==="meet") showMeetSub(); else if(c.k==="trip") showTripForm(); else addCat(c.k,null); };
     box.appendChild(b); });
 }
 function showMeetSub(){ const s=document.getElementById("subMeet"); s.style.display="block"; s.innerHTML="";
@@ -342,11 +344,19 @@ function showMeetSub(){ const s=document.getElementById("subMeet"); s.style.disp
     b.onclick=()=>addCat("meet",k); row.appendChild(b); });
   s.appendChild(row);
 }
+function showTripForm(){ const s=document.getElementById("subMeet"); s.style.display="block"; s.innerHTML="";
+  const t=document.createElement("input"); t.type="text"; t.id="tripTime"; t.className="placein"; t.placeholder="🕐 시간 (예: 오전 9시, 1박2일…) — 선택";
+  const p=document.createElement("input"); p.type="text"; p.id="tripPlace"; p.className="placein"; p.placeholder="📍 장소 (예: 부산, 서울…) — 선택";
+  s.appendChild(t); s.appendChild(p);
+  const b=document.createElement("button"); b.className="subbtn full"; b.textContent="✈️ 출장 추가";
+  b.onclick=()=>addCat("trip",null); s.appendChild(b);
+}
 function addCat(cat, meet){ if(!curDay) return;
   const who = cat==="date" ? "both" : evWho; /* 데이트는 무조건 함께 */
-  const placeEl=document.getElementById("evPlace");
-  const place = (cat==="meet" && placeEl) ? placeEl.value.trim() : "";
-  const ev={date:curDay, who:who, cat:cat, meet:meet||null, place:place||null, t:Date.now()};
+  let place=null, time=null;
+  if(cat==="meet"){ const p=document.getElementById("evPlace"); place=p?p.value.trim():""; }
+  if(cat==="trip"){ const p=document.getElementById("tripPlace"); place=p?p.value.trim():""; const tm=document.getElementById("tripTime"); time=tm?tm.value.trim():""; }
+  const ev={date:curDay, who:who, cat:cat, meet:meet||null, place:place||null, time:time||null, t:Date.now()};
   if(db) db.ref(ROOT+"/events").push(ev);
   document.getElementById("subMeet").style.display="none";
 }
