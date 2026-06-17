@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>정용 ♥ 지영 — 우리 캘린더</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+  :root{
+    --pink:#f6a5c0; --pink-deep:#e26d92; --blue:#8fb8e8; --blue-deep:#5b8fd6;
+    --both:#b48ad6; --bg:#fff7fb; --card:#ffffff; --line:#f1dee8;
+    --ink:#5b4a52; --muted:#a892a0;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{margin:0; font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    background:linear-gradient(160deg,#fff7fb 0%,#f3f7ff 100%); color:var(--ink); min-height:100vh;}
+  .wrap{max-width:720px; margin:0 auto; padding:18px 16px 60px;}
+
+  /* header */
+  .top{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:6px;}
+  .top h1{margin:0; font-size:21px; font-weight:800; letter-spacing:-.3px;}
+  .top h1 .h{color:var(--pink-deep);} .top h1 .y{color:var(--blue-deep);}
+  .gear{border:1.5px solid var(--line); background:#fff; border-radius:50%; width:40px; height:40px; cursor:pointer; font-size:17px; flex:none;}
+  .live{font-size:11.5px; color:var(--muted); margin-bottom:14px;}
+  .live.on{color:#4caf86;}
+
+  /* dday hero */
+  .hero{background:linear-gradient(135deg,#ffe3ee 0%,#e3edff 100%); border-radius:22px; padding:20px 18px; text-align:center; margin-bottom:14px; box-shadow:0 6px 22px rgba(226,109,146,.12);}
+  .hero .lbl{font-size:13px; color:#9a7e8c; font-weight:600;}
+  .hero .big{font-size:40px; font-weight:900; letter-spacing:-1px; margin:2px 0 2px; background:linear-gradient(90deg,var(--pink-deep),var(--blue-deep)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;}
+  .hero .sub{font-size:12.5px; color:#a892a0;}
+
+  /* milestone chips */
+  .marks{display:flex; gap:9px; overflow-x:auto; padding-bottom:4px; margin-bottom:18px; scrollbar-width:none;}
+  .marks::-webkit-scrollbar{display:none;}
+  .mark{flex:none; background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:10px 14px; text-align:center; min-width:96px;}
+  .mark .mt{font-size:12px; color:var(--muted);}
+  .mark .md{font-size:18px; font-weight:800; color:var(--pink-deep); margin:2px 0;}
+  .mark .ms{font-size:11px; color:#b6a3ae;}
+
+  .card{background:var(--card); border-radius:18px; padding:16px; margin-bottom:16px; box-shadow:0 3px 14px rgba(150,120,140,.07);}
+  .sec-title{font-weight:800; font-size:16px; margin:0 0 12px; display:flex; align-items:center; gap:7px;}
+
+  /* calendar */
+  .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;}
+  .cal-head .mtitle{font-size:17px; font-weight:800;}
+  .cal-nav{border:0; background:#f6e9f1; color:var(--pink-deep); width:34px; height:34px; border-radius:50%; cursor:pointer; font-size:16px; font-weight:800;}
+  .grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px;}
+  .gd{text-align:center; font-size:12px; font-weight:700; color:#bba7b3; padding:4px 0;}
+  .gd.sun{color:#e8869f;} .gd.sat{color:#7fa3df;}
+  .cell{min-height:62px; border-radius:11px; padding:5px 5px 4px; background:#fbf4f8; cursor:pointer; display:flex; flex-direction:column; gap:2px; overflow:hidden; border:1.5px solid transparent;}
+  .cell.blank{background:transparent; cursor:default;}
+  .cell.today{border-color:var(--pink); background:#fff;}
+  .cell .dn{font-size:12.5px; font-weight:700; color:#9c8893;}
+  .cell.today .dn{color:var(--pink-deep);}
+  .cell .sun{color:#e8869f;} .cell .sat{color:#7fa3df;}
+  .ev{font-size:10.5px; line-height:1.25; color:#fff; border-radius:5px; padding:1px 4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .more{font-size:9.5px; color:#b6a3ae; padding-left:2px;}
+
+  /* todo */
+  .todo{display:flex; align-items:center; gap:10px; padding:9px 2px; border-bottom:1px solid #f6ecf2;}
+  .todo:last-child{border-bottom:0;}
+  .todo .chk{width:22px; height:22px; border-radius:7px; border:2px solid var(--pink); cursor:pointer; flex:none; display:flex; align-items:center; justify-content:center; color:#fff; font-size:13px;}
+  .todo.done .chk{background:var(--pink); border-color:var(--pink);}
+  .todo .tx{flex:1; font-size:14.5px;}
+  .todo.done .tx{text-decoration:line-through; color:#c5b3bd;}
+  .todo .del{border:0; background:none; color:#d6bcc8; cursor:pointer; font-size:15px;}
+
+  /* memo */
+  .memo{padding:9px 0; border-bottom:1px solid #f6ecf2;}
+  .memo:last-child{border-bottom:0;}
+  .memo .mw{font-weight:800; font-size:12.5px; margin-bottom:2px;}
+  .memo .mtx{font-size:14px; color:#6a5a62;}
+  .memo .mt{font-size:10.5px; color:#c2adb6; margin-top:3px;}
+
+  /* who chips */
+  .who{display:flex; gap:7px; align-items:center; margin:10px 0; flex-wrap:wrap;}
+  .who .wl{font-size:12.5px; color:var(--muted); margin-right:2px;}
+  .who button{border:1.5px solid var(--line); background:#fff; border-radius:999px; padding:6px 14px; font:inherit; font-size:13px; cursor:pointer; color:#8a6670;}
+  .who button.on{color:#fff; font-weight:700; border-color:transparent;}
+
+  /* input row */
+  .irow{display:flex; gap:8px; margin-top:12px;}
+  .irow input[type=text]{flex:1; border:1.5px solid var(--line); border-radius:999px; padding:11px 16px; font:inherit; font-size:14px; outline:0;}
+  .irow input[type=text]:focus{border-color:var(--pink);}
+  .add{border:0; background:var(--pink-deep); color:#fff; font:inherit; font-weight:700; padding:11px 18px; border-radius:999px; cursor:pointer; flex:none;}
+
+  /* modal */
+  .ov{position:fixed; inset:0; background:rgba(80,60,72,.42); display:none; align-items:center; justify-content:center; padding:18px; z-index:50;}
+  .ov.open{display:flex;}
+  .modal{background:#fff; border-radius:20px; padding:20px; width:100%; max-width:380px; max-height:86vh; overflow:auto;}
+  .modal h3{margin:0 0 4px; font-size:18px;}
+  .modal .msub{font-size:12.5px; color:var(--muted); margin-bottom:14px;}
+  .modal label{display:block; font-size:12.5px; color:#9a8591; font-weight:600; margin:12px 0 6px;}
+  .modal input[type=text],.modal input[type=date]{width:100%; border:1.5px solid var(--line); border-radius:11px; padding:11px 13px; font:inherit; font-size:14px; outline:0;}
+  .modal input:focus{border-color:var(--pink);}
+  .daylist{margin:6px 0 2px;}
+  .dayev{display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid #f6ecf2; font-size:14px;}
+  .dayev .dot{width:9px; height:9px; border-radius:50%; flex:none;}
+  .dayev .dt{flex:1;} .dayev .dx{border:0; background:none; color:#d6bcc8; cursor:pointer; font-size:14px;}
+  .mbtns{display:flex; gap:8px; margin-top:18px;}
+  .btn{flex:1; border:0; background:var(--pink-deep); color:#fff; font:inherit; font-weight:700; padding:12px; border-radius:12px; cursor:pointer;}
+  .btn.ghost{background:#f3e8ee; color:#9a7888;}
+
+  .warn{background:#fff3cd; color:#856404; border-radius:12px; padding:11px 13px; font-size:12.5px; margin-bottom:14px; display:none;}
+  .empty{color:#cdb3bf; font-size:13px; padding:6px 2px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1><span class="y">정용</span> ♥ <span class="h">지영</span></h1>
+    <button class="gear" id="gearBtn" title="설정">⚙️</button>
+  </div>
+  <div class="live" id="liveTag">● 연결 중…</div>
+
+  <div class="warn" id="warn"></div>
+
+  <div class="hero">
+    <div class="lbl" id="heroLbl">우리가 함께한 지</div>
+    <div class="big" id="heroBig">D+—</div>
+    <div class="sub" id="heroSub"></div>
+  </div>
+
+  <div class="marks" id="marks"></div>
+
+  <!-- calendar -->
+  <div class="card">
+    <div class="cal-head">
+      <button class="cal-nav" id="prevM">‹</button>
+      <div class="mtitle" id="calTitle"></div>
+      <button class="cal-nav" id="nextM">›</button>
+    </div>
+    <div class="grid" id="calGrid"></div>
+  </div>
+
+  <!-- todo -->
+  <div class="card">
+    <div class="sec-title">✅ 함께 할 일</div>
+    <div id="todoList"></div>
+    <div class="irow">
+      <input type="text" id="todoText" placeholder="같이 할 일을 적어보세요…">
+      <button class="add" id="todoAdd">추가</button>
+    </div>
+  </div>
+
+  <!-- memo -->
+  <div class="card">
+    <div class="sec-title">💌 오늘의 한마디</div>
+    <div id="memoList"></div>
+    <div class="who" id="memoWho"></div>
+    <div class="irow">
+      <input type="text" id="memoText" placeholder="서로에게 한마디 남겨요…">
+      <button class="add" id="memoAdd">남기기</button>
+    </div>
+  </div>
+</div>
+
+<!-- day modal -->
+<div class="ov" id="dayOv">
+  <div class="modal">
+    <h3 id="dayTitle"></h3>
+    <div class="msub">이 날의 일정이에요</div>
+    <div class="daylist" id="dayList"></div>
+    <label>누구 일정인가요?</label>
+    <div class="who" id="evWho"></div>
+    <label>일정 내용</label>
+    <input type="text" id="evText" placeholder="예: 저녁 데이트 🍝">
+    <div class="mbtns"><button class="btn ghost" id="dayClose">닫기</button><button class="btn" id="evAdd">일정 추가</button></div>
+  </div>
+</div>
+
+<!-- settings modal -->
+<div class="ov" id="setOv">
+  <div class="modal">
+    <h3>설정</h3>
+    <div class="msub">이름과 사귄 날짜를 바꿀 수 있어요</div>
+    <label>💗 이름 (핑크)</label>
+    <input type="text" id="setA">
+    <label>💙 이름 (블루)</label>
+    <input type="text" id="setB">
+    <label>사귄 날짜</label>
+    <input type="date" id="setAnniv">
+    <div class="mbtns"><button class="btn ghost" id="setClose">취소</button><button class="btn" id="setSave">저장</button></div>
+  </div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDerROVp0gBbuClRdhNAn42uv1FjnoaOKQ",
+  authDomain: "young-94e97.firebaseapp.com",
+  databaseURL: "https://young-94e97-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "young-94e97",
+  storageBucket: "young-94e97.firebasestorage.app",
+  messagingSenderId: "320869908269",
+  appId: "1:320869908269:web:9a204ef6ae3423e81e5da4",
+};
+const ROOT = "couple";   /* 팀 보드와 같은 DB를 쓰되 'couple' 공간만 사용 */
+const configured = firebaseConfig.apiKey.indexOf("AIza")===0;
+let db=null;
+
+/* ---- state ---- */
+const COL = {a:"#e26d92", b:"#5b8fd6", both:"#b48ad6"};
+let SET = {a:"지영", b:"정용", anniv:"2026-06-11"};
+let EVENTS=[], TODOS=[], MEMOS=[];
+let evWho="a", memoWho="a";
+const now=new Date();
+let viewY=now.getFullYear(), viewM=now.getMonth();
+let curDay=null;
+
+/* ---- helpers ---- */
+const pad=n=>String(n).padStart(2,"0");
+const esc=s=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function midnight(d){ return new Date(d.getFullYear(),d.getMonth(),d.getDate()); }
+function ymd(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+function parseD(s){ const p=(s||"").split("-"); return new Date(+p[0],(+p[1]||1)-1,+p[2]||1); }
+function whoName(w){ return w==="both"?(SET.a+"·"+SET.b):(w==="b"?SET.b:SET.a); }
+const DAY=86400000;
+
+/* ---- D-day hero + milestones ---- */
+function renderDday(){
+  const anv=midnight(parseD(SET.anniv)), today=midnight(new Date());
+  const diff=Math.round((today-anv)/DAY);
+  const dday=diff+1; /* 사귄 날이 1일 */
+  document.getElementById("heroBig").textContent = diff>=0 ? ("D+"+diff) : ("D"+diff);
+  document.getElementById("heroLbl").textContent = SET.a+" ♥ "+SET.b+" 함께한 지";
+  document.getElementById("heroSub").textContent = (diff>=0? (dday+"일째 · ") : "") + "시작일 "+SET.anniv;
+
+  /* milestones: 일수 기준 + 주년 기준, 다가오는 것 위주 */
+  const marks=[];
+  [100,200,300,500,1000,2000,3000].forEach(n=>{ const dt=new Date(anv.getTime()+(n-1)*DAY); marks.push({label:n+"일", date:dt}); });
+  for(let y=1;y<=20;y++){ const dt=new Date(anv.getFullYear()+y,anv.getMonth(),anv.getDate()); marks.push({label:y+"주년", date:dt}); }
+  const up=marks.map(m=>({...m, left:Math.round((midnight(m.date)-today)/DAY)}))
+               .filter(m=>m.left>=0).sort((a,b)=>a.left-b.left).slice(0,6);
+  const box=document.getElementById("marks"); box.innerHTML="";
+  up.forEach(m=>{ const el=document.createElement("div"); el.className="mark";
+    el.innerHTML='<div class="mt">'+m.label+'</div><div class="md">'+(m.left===0?"오늘🎉":"D-"+m.left)+'</div><div class="ms">'+ymd(m.date).slice(5).replace("-",".")+'</div>';
+    box.appendChild(el); });
+}
+
+/* ---- calendar ---- */
+function renderCal(){
+  document.getElementById("calTitle").textContent = viewY+"년 "+(viewM+1)+"월";
+  const grid=document.getElementById("calGrid"); grid.innerHTML="";
+  ["일","월","화","수","목","금","토"].forEach((d,i)=>{ const h=document.createElement("div"); h.className="gd"+(i===0?" sun":i===6?" sat":""); h.textContent=d; grid.appendChild(h); });
+  const first=new Date(viewY,viewM,1).getDay();
+  const days=new Date(viewY,viewM+1,0).getDate();
+  const todayStr=ymd(new Date());
+  /* events grouped by date */
+  const byDate={}; EVENTS.forEach(e=>{ (byDate[e.date]=byDate[e.date]||[]).push(e); });
+  for(let i=0;i<first;i++){ const b=document.createElement("div"); b.className="cell blank"; grid.appendChild(b); }
+  for(let d=1; d<=days; d++){
+    const ds=viewY+"-"+pad(viewM+1)+"-"+pad(d);
+    const wd=new Date(viewY,viewM,d).getDay();
+    const cell=document.createElement("div"); cell.className="cell"+(ds===todayStr?" today":"");
+    const evs=byDate[ds]||[];
+    let html='<div class="dn'+(wd===0?" sun":wd===6?" sat":"")+'">'+d+'</div>';
+    evs.slice(0,3).forEach(e=>{ html+='<div class="ev" style="background:'+(COL[e.who]||COL.a)+'">'+esc(e.title)+'</div>'; });
+    if(evs.length>3) html+='<div class="more">+'+(evs.length-3)+'</div>';
+    cell.innerHTML=html;
+    cell.onclick=()=>openDay(ds);
+    grid.appendChild(cell);
+  }
+}
+
+/* ---- day modal ---- */
+function openDay(ds){ curDay=ds; const dt=parseD(ds);
+  const wk=["일","월","화","수","목","금","토"][dt.getDay()];
+  document.getElementById("dayTitle").textContent=(dt.getMonth()+1)+"월 "+dt.getDate()+"일 ("+wk+")";
+  document.getElementById("evText").value=""; renderDayList(); renderEvWho();
+  document.getElementById("dayOv").classList.add("open");
+}
+function renderDayList(){
+  const box=document.getElementById("dayList");
+  const evs=EVENTS.filter(e=>e.date===curDay).sort((a,b)=>(a.t||0)-(b.t||0));
+  if(!evs.length){ box.innerHTML='<div class="empty">아직 일정이 없어요.</div>'; return; }
+  box.innerHTML="";
+  evs.forEach(e=>{ const r=document.createElement("div"); r.className="dayev";
+    r.innerHTML='<span class="dot" style="background:'+(COL[e.who]||COL.a)+'"></span><span class="dt">'+esc(e.title)+' <small style="color:#bba7b3">· '+whoName(e.who)+'</small></span>';
+    const x=document.createElement("button"); x.className="dx"; x.textContent="✕";
+    x.onclick=()=>{ if(db&&e.id) db.ref(ROOT+"/events/"+e.id).remove(); };
+    r.appendChild(x); box.appendChild(r); });
+}
+function renderEvWho(){ chips("evWho", evWho, w=>{evWho=w; renderEvWho();}); }
+function addEvent(){ const t=document.getElementById("evText").value.trim(); if(!t||!curDay) return;
+  const ev={date:curDay, title:t, who:evWho, t:Date.now()};
+  if(db) db.ref(ROOT+"/events").push(ev);
+  document.getElementById("evText").value="";
+}
+
+/* ---- who chips (shared) ---- */
+function chips(boxId, sel, onPick){
+  const box=document.getElementById(boxId); box.innerHTML='<span class="wl">누구</span>';
+  [["a",SET.a,COL.a],["b",SET.b,COL.b],["both","함께",COL.both]].forEach(([k,nm,c])=>{
+    const b=document.createElement("button"); b.textContent=nm;
+    if(k===sel){ b.classList.add("on"); b.style.background=c; }
+    b.onclick=()=>onPick(k); box.appendChild(b);
+  });
+}
+
+/* ---- todo ---- */
+function renderTodos(){
+  const box=document.getElementById("todoList");
+  if(!TODOS.length){ box.innerHTML='<div class="empty">함께 할 일을 추가해보세요!</div>'; return; }
+  box.innerHTML="";
+  TODOS.sort((a,b)=>(a.t||0)-(b.t||0)).forEach(t=>{
+    const r=document.createElement("div"); r.className="todo"+(t.done?" done":"");
+    const c=document.createElement("div"); c.className="chk"; c.textContent=t.done?"✓":"";
+    c.onclick=()=>{ if(db&&t.id) db.ref(ROOT+"/todos/"+t.id+"/done").set(!t.done); };
+    const tx=document.createElement("div"); tx.className="tx"; tx.textContent=t.text;
+    const x=document.createElement("button"); x.className="del"; x.textContent="✕";
+    x.onclick=()=>{ if(db&&t.id) db.ref(ROOT+"/todos/"+t.id).remove(); };
+    r.append(c,tx,x); box.appendChild(r);
+  });
+}
+function addTodo(){ const t=document.getElementById("todoText").value.trim(); if(!t) return;
+  if(db) db.ref(ROOT+"/todos").push({text:t, done:false, t:Date.now()});
+  document.getElementById("todoText").value="";
+}
+
+/* ---- memo ---- */
+function renderMemos(){
+  const box=document.getElementById("memoList");
+  if(!MEMOS.length){ box.innerHTML='<div class="empty">첫 한마디를 남겨보세요 💕</div>'; return; }
+  box.innerHTML="";
+  MEMOS.sort((a,b)=>(b.t||0)-(a.t||0)).slice(0,30).forEach(m=>{
+    const r=document.createElement("div"); r.className="memo";
+    const d=new Date(m.t||0); const hm=pad(d.getHours())+":"+pad(d.getMinutes());
+    r.innerHTML='<div class="mw" style="color:'+(COL[m.who]||COL.a)+'">'+esc(whoName(m.who))+'</div>'
+      +'<div class="mtx">'+esc(m.text)+'</div>'
+      +'<div class="mt">'+(d.getMonth()+1)+"."+d.getDate()+" "+hm+'</div>';
+    box.appendChild(r);
+  });
+}
+function renderMemoWho(){ chips("memoWho", memoWho, w=>{memoWho=w; renderMemoWho();}); }
+function addMemo(){ const t=document.getElementById("memoText").value.trim(); if(!t) return;
+  if(db) db.ref(ROOT+"/memos").push({who:memoWho, text:t, t:Date.now()});
+  document.getElementById("memoText").value="";
+}
+
+/* ---- settings ---- */
+function openSet(){ document.getElementById("setA").value=SET.a; document.getElementById("setB").value=SET.b;
+  document.getElementById("setAnniv").value=SET.anniv; document.getElementById("setOv").classList.add("open"); }
+function saveSet(){
+  const a=document.getElementById("setA").value.trim()||"지영";
+  const b=document.getElementById("setB").value.trim()||"정용";
+  const anniv=document.getElementById("setAnniv").value||"2026-06-11";
+  const s={a,b,anniv};
+  if(db) db.ref(ROOT+"/settings").set(s); else { SET=s; refreshAll(); }
+  document.getElementById("setOv").classList.remove("open");
+}
+
+function refreshAll(){ renderDday(); renderCal(); renderTodos(); renderMemos(); renderMemoWho();
+  document.querySelector(".top h1").innerHTML='<span class="y">'+esc(SET.b)+'</span> ♥ <span class="h">'+esc(SET.a)+'</span>';
+}
+
+/* ---- wire ---- */
+document.getElementById("prevM").onclick=()=>{ viewM--; if(viewM<0){viewM=11;viewY--;} renderCal(); };
+document.getElementById("nextM").onclick=()=>{ viewM++; if(viewM>11){viewM=0;viewY++;} renderCal(); };
+document.getElementById("evAdd").onclick=addEvent;
+document.getElementById("evText").addEventListener("keydown",e=>{ if(e.key==="Enter") addEvent(); });
+document.getElementById("dayClose").onclick=()=>document.getElementById("dayOv").classList.remove("open");
+document.getElementById("todoAdd").onclick=addTodo;
+document.getElementById("todoText").addEventListener("keydown",e=>{ if(e.key==="Enter") addTodo(); });
+document.getElementById("memoAdd").onclick=addMemo;
+document.getElementById("memoText").addEventListener("keydown",e=>{ if(e.key==="Enter") addMemo(); });
+document.getElementById("gearBtn").onclick=openSet;
+document.getElementById("setClose").onclick=()=>document.getElementById("setOv").classList.remove("open");
+document.getElementById("setSave").onclick=saveSet;
+[["dayOv"],["setOv"]].forEach(([id])=>{ document.getElementById(id).onclick=e=>{ if(e.target.id===id) document.getElementById(id).classList.remove("open"); }; });
+
+/* ---- start / sync ---- */
+function start(){
+  refreshAll();
+  const live=document.getElementById("liveTag");
+  if(!configured){ document.getElementById("warn").style.display="block";
+    document.getElementById("warn").innerHTML="⚠ <b>Firebase 설정 전</b> — 지금은 미리보기예요."; return; }
+  firebase.initializeApp(firebaseConfig); db=firebase.database();
+  live.className="live on"; live.textContent="● 실시간 연결됨 — 둘이 함께 보고 있어요";
+  db.ref(ROOT+"/settings").on("value",s=>{ const v=s.val(); if(v){ SET=Object.assign(SET,v); } else { db.ref(ROOT+"/settings").set(SET); } refreshAll(); });
+  db.ref(ROOT+"/events").on("value",s=>{ const v=s.val()||{}; EVENTS=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderCal(); if(curDay&&document.getElementById("dayOv").classList.contains("open")) renderDayList(); });
+  db.ref(ROOT+"/todos").on("value",s=>{ const v=s.val()||{}; TODOS=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderTodos(); });
+  db.ref(ROOT+"/memos").on("value",s=>{ const v=s.val()||{}; MEMOS=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderMemos(); });
+  setInterval(renderDday, 60000);
+}
+start();
+</script>
+</body>
+</html>
