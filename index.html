@@ -48,13 +48,15 @@
   .cal-nav{border:0; background:#f6e9f1; color:var(--pink-deep); width:34px; height:34px; border-radius:50%; cursor:pointer; font-size:16px; font-weight:800;}
   .grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px;}
   .gd{text-align:center; font-size:12px; font-weight:700; color:#bba7b3; padding:4px 0;}
-  .gd.sun{color:#e8869f;} .gd.sat{color:#7fa3df;}
-  .cell{min-height:62px; border-radius:11px; padding:5px 5px 4px; background:#fbf4f8; cursor:pointer; display:flex; flex-direction:column; gap:2px; overflow:hidden; border:1.5px solid transparent;}
+  .gd.sun,.gd.sat{color:#e8607f;}
+  .cell{min-height:64px; border-radius:11px; padding:5px 5px 4px; background:#fbf4f8; cursor:pointer; display:flex; flex-direction:column; gap:2px; overflow:hidden; border:1.5px solid transparent;}
   .cell.blank{background:transparent; cursor:default;}
   .cell.today{border-color:var(--pink); background:#fff;}
   .cell .dn{font-size:12.5px; font-weight:700; color:#9c8893;}
   .cell.today .dn{color:var(--pink-deep);}
-  .cell .sun{color:#e8869f;} .cell .sat{color:#7fa3df;}
+  .cell .sun,.cell .sat{color:#e8607f;}
+  .cell .dn.hol{color:#e8607f;}
+  .holname{font-size:9px; color:#e8607f; font-weight:700; line-height:1.15; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .ev{font-size:10.5px; line-height:1.25; color:#fff; border-radius:5px; padding:1px 4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .more{font-size:9.5px; color:#b6a3ae; padding-left:2px;}
 
@@ -99,6 +101,13 @@
   .dayev{display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid #f6ecf2; font-size:14px;}
   .dayev .dot{width:9px; height:9px; border-radius:50%; flex:none;}
   .dayev .dt{flex:1;} .dayev .dx{border:0; background:none; color:#d6bcc8; cursor:pointer; font-size:14px;}
+  .catgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:4px;}
+  .catbtn{border:1.5px solid var(--line); background:#fff; border-radius:14px; padding:14px 6px; font:inherit; font-size:13.5px; font-weight:700; color:#7a6670; cursor:pointer; display:flex; flex-direction:column; gap:5px; align-items:center;}
+  .catbtn .ce{font-size:23px;}
+  .catbtn:active{background:#fbeef4; border-color:var(--pink);}
+  .submeet{display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-top:9px;}
+  .subbtn{border:1.5px solid var(--pink); background:#fff; border-radius:12px; padding:13px; font:inherit; font-weight:700; font-size:14px; color:var(--pink-deep); cursor:pointer;}
+  .subbtn:active{background:#fceef4;}
   .mbtns{display:flex; gap:8px; margin-top:18px;}
   .btn{flex:1; border:0; background:var(--pink-deep); color:#fff; font:inherit; font-weight:700; padding:12px; border-radius:12px; cursor:pointer;}
   .btn.ghost{background:#f3e8ee; color:#9a7888;}
@@ -161,13 +170,14 @@
 <div class="ov" id="dayOv">
   <div class="modal">
     <h3 id="dayTitle"></h3>
-    <div class="msub">이 날의 일정이에요</div>
+    <div class="msub" id="dayHol">이 날의 일정이에요</div>
     <div class="daylist" id="dayList"></div>
-    <label>누구 일정인가요?</label>
+    <label>누구</label>
     <div class="who" id="evWho"></div>
-    <label>일정 내용</label>
-    <input type="text" id="evText" placeholder="예: 저녁 데이트 🍝">
-    <div class="mbtns"><button class="btn ghost" id="dayClose">닫기</button><button class="btn" id="evAdd">일정 추가</button></div>
+    <label>무엇을 추가할까요? (누르면 바로 추가)</label>
+    <div class="catgrid" id="catGrid"></div>
+    <div class="submeet" id="subMeet" style="display:none"></div>
+    <div class="mbtns"><button class="btn ghost" id="dayClose">닫기</button></div>
   </div>
 </div>
 
@@ -205,6 +215,21 @@ let db=null;
 
 /* ---- state ---- */
 const COL = {a:"#e26d92", b:"#5b8fd6", both:"#b48ad6"};
+const CATS = [{k:"date",e:"💕",l:"데이트"},{k:"exercise",e:"💪",l:"운동"},{k:"meet",e:"🤝",l:"약속"}];
+/* 한국 공휴일 (2026·2027) — 토·일은 코드에서 자동 빨강 처리 */
+const HOLIDAYS = {
+  "2026-01-01":"신정","2026-02-16":"설날","2026-02-17":"설날","2026-02-18":"설날",
+  "2026-03-01":"삼일절","2026-03-02":"대체공휴일","2026-05-05":"어린이날",
+  "2026-05-24":"부처님오신날","2026-05-25":"대체공휴일","2026-06-06":"현충일",
+  "2026-08-15":"광복절","2026-08-17":"대체공휴일","2026-09-24":"추석","2026-09-25":"추석",
+  "2026-09-26":"추석","2026-09-28":"대체공휴일","2026-10-03":"개천절","2026-10-05":"대체공휴일",
+  "2026-10-09":"한글날","2026-12-25":"성탄절",
+  "2027-01-01":"신정","2027-02-06":"설날","2027-02-07":"설날","2027-02-08":"설날","2027-02-09":"대체공휴일",
+  "2027-03-01":"삼일절","2027-05-05":"어린이날","2027-05-13":"부처님오신날","2027-06-06":"현충일",
+  "2027-08-15":"광복절","2027-08-16":"대체공휴일","2027-09-14":"추석","2027-09-15":"추석","2027-09-16":"추석",
+  "2027-10-03":"개천절","2027-10-04":"대체공휴일","2027-10-09":"한글날","2027-10-11":"대체공휴일",
+  "2027-12-25":"성탄절","2027-12-27":"대체공휴일",
+};
 let SET = {a:"지영", b:"정용", anniv:"2026-06-11"};
 let EVENTS=[], TODOS=[], MEMOS=[];
 let evWho="a", memoWho="a";
@@ -256,11 +281,15 @@ function renderCal(){
   for(let d=1; d<=days; d++){
     const ds=viewY+"-"+pad(viewM+1)+"-"+pad(d);
     const wd=new Date(viewY,viewM,d).getDay();
+    const hn=HOLIDAYS[ds];
+    const red=(wd===0||wd===6||hn)?" sun":"";
     const cell=document.createElement("div"); cell.className="cell"+(ds===todayStr?" today":"");
     const evs=byDate[ds]||[];
-    let html='<div class="dn'+(wd===0?" sun":wd===6?" sat":"")+'">'+d+'</div>';
-    evs.slice(0,3).forEach(e=>{ html+='<div class="ev" style="background:'+(COL[e.who]||COL.a)+'">'+esc(e.title)+'</div>'; });
-    if(evs.length>3) html+='<div class="more">+'+(evs.length-3)+'</div>';
+    let html='<div class="dn'+red+(hn?" hol":"")+'">'+d+'</div>';
+    if(hn) html+='<div class="holname">'+esc(hn)+'</div>';
+    const lim=hn?2:3;
+    evs.slice(0,lim).forEach(e=>{ html+='<div class="ev" style="background:'+(COL[e.who]||COL.a)+'">'+esc(catLabel(e))+'</div>'; });
+    if(evs.length>lim) html+='<div class="more">+'+(evs.length-lim)+'</div>';
     cell.innerHTML=html;
     cell.onclick=()=>openDay(ds);
     grid.appendChild(cell);
@@ -268,10 +297,18 @@ function renderCal(){
 }
 
 /* ---- day modal ---- */
+function catLabel(e){
+  if(e.cat==="date") return "💕 데이트";
+  if(e.cat==="exercise") return "💪 운동";
+  if(e.cat==="meet") return "🤝 약속·"+(e.meet==="mixed"?"이성":"동성");
+  return e.title||"일정"; /* 옛 자유입력 일정 호환 */
+}
 function openDay(ds){ curDay=ds; const dt=parseD(ds);
   const wk=["일","월","화","수","목","금","토"][dt.getDay()];
   document.getElementById("dayTitle").textContent=(dt.getMonth()+1)+"월 "+dt.getDate()+"일 ("+wk+")";
-  document.getElementById("evText").value=""; renderDayList(); renderEvWho();
+  const hn=HOLIDAYS[ds];
+  document.getElementById("dayHol").textContent = hn ? ("🎉 "+hn) : "이 날의 일정이에요";
+  renderDayList(); renderEvWho(); renderCats();
   document.getElementById("dayOv").classList.add("open");
 }
 function renderDayList(){
@@ -280,16 +317,28 @@ function renderDayList(){
   if(!evs.length){ box.innerHTML='<div class="empty">아직 일정이 없어요.</div>'; return; }
   box.innerHTML="";
   evs.forEach(e=>{ const r=document.createElement("div"); r.className="dayev";
-    r.innerHTML='<span class="dot" style="background:'+(COL[e.who]||COL.a)+'"></span><span class="dt">'+esc(e.title)+' <small style="color:#bba7b3">· '+whoName(e.who)+'</small></span>';
+    r.innerHTML='<span class="dot" style="background:'+(COL[e.who]||COL.a)+'"></span><span class="dt">'+esc(catLabel(e))+' <small style="color:#bba7b3">· '+whoName(e.who)+'</small></span>';
     const x=document.createElement("button"); x.className="dx"; x.textContent="✕";
     x.onclick=()=>{ if(db&&e.id) db.ref(ROOT+"/events/"+e.id).remove(); };
     r.appendChild(x); box.appendChild(r); });
 }
 function renderEvWho(){ chips("evWho", evWho, w=>{evWho=w; renderEvWho();}); }
-function addEvent(){ const t=document.getElementById("evText").value.trim(); if(!t||!curDay) return;
-  const ev={date:curDay, title:t, who:evWho, t:Date.now()};
+function renderCats(){
+  const box=document.getElementById("catGrid"); box.innerHTML="";
+  document.getElementById("subMeet").style.display="none";
+  CATS.forEach(c=>{ const b=document.createElement("button"); b.className="catbtn";
+    b.innerHTML='<span class="ce">'+c.e+'</span>'+c.l;
+    b.onclick=()=>{ if(c.k==="meet") showMeetSub(); else addCat(c.k,null); };
+    box.appendChild(b); });
+}
+function showMeetSub(){ const s=document.getElementById("subMeet"); s.style.display="grid"; s.innerHTML="";
+  [["same","👬 동성만"],["mixed","👫 이성 포함"]].forEach(([k,l])=>{ const b=document.createElement("button"); b.className="subbtn"; b.textContent=l;
+    b.onclick=()=>addCat("meet",k); s.appendChild(b); });
+}
+function addCat(cat, meet){ if(!curDay) return;
+  const ev={date:curDay, who:evWho, cat:cat, meet:meet||null, t:Date.now()};
   if(db) db.ref(ROOT+"/events").push(ev);
-  document.getElementById("evText").value="";
+  document.getElementById("subMeet").style.display="none";
 }
 
 /* ---- who chips (shared) ---- */
@@ -361,8 +410,6 @@ function refreshAll(){ renderDday(); renderCal(); renderTodos(); renderMemos(); 
 /* ---- wire ---- */
 document.getElementById("prevM").onclick=()=>{ viewM--; if(viewM<0){viewM=11;viewY--;} renderCal(); };
 document.getElementById("nextM").onclick=()=>{ viewM++; if(viewM>11){viewM=0;viewY++;} renderCal(); };
-document.getElementById("evAdd").onclick=addEvent;
-document.getElementById("evText").addEventListener("keydown",e=>{ if(e.key==="Enter") addEvent(); });
 document.getElementById("dayClose").onclick=()=>document.getElementById("dayOv").classList.remove("open");
 document.getElementById("todoAdd").onclick=addTodo;
 document.getElementById("todoText").addEventListener("keydown",e=>{ if(e.key==="Enter") addTodo(); });
