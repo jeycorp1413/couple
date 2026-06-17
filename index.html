@@ -156,7 +156,7 @@
 
   <!-- memo -->
   <div class="card">
-    <div class="sec-title">💌 오늘의 한마디</div>
+    <div class="sec-title" id="memoTitle">💌 우리의 한마디</div>
     <div id="memoList"></div>
     <div class="who" id="memoWho"></div>
     <div class="irow">
@@ -336,7 +336,8 @@ function showMeetSub(){ const s=document.getElementById("subMeet"); s.style.disp
     b.onclick=()=>addCat("meet",k); s.appendChild(b); });
 }
 function addCat(cat, meet){ if(!curDay) return;
-  const ev={date:curDay, who:evWho, cat:cat, meet:meet||null, t:Date.now()};
+  const who = cat==="date" ? "both" : evWho; /* 데이트는 무조건 함께 */
+  const ev={date:curDay, who:who, cat:cat, meet:meet||null, t:Date.now()};
   if(db) db.ref(ROOT+"/events").push(ev);
   document.getElementById("subMeet").style.display="none";
 }
@@ -374,14 +375,17 @@ function addTodo(){ const t=document.getElementById("todoText").value.trim(); if
 /* ---- memo ---- */
 function renderMemos(){
   const box=document.getElementById("memoList");
+  const title=document.getElementById("memoTitle");
+  title.textContent = MEMOS.length ? ("💌 우리의 한마디 ("+MEMOS.length+")") : "💌 우리의 한마디";
   if(!MEMOS.length){ box.innerHTML='<div class="empty">첫 한마디를 남겨보세요 💕</div>'; return; }
   box.innerHTML="";
-  MEMOS.sort((a,b)=>(b.t||0)-(a.t||0)).slice(0,30).forEach(m=>{
+  /* 삭제 없이 계속 쌓임 — 최신순 전체 표시 */
+  MEMOS.slice().sort((a,b)=>(b.t||0)-(a.t||0)).forEach(m=>{
     const r=document.createElement("div"); r.className="memo";
     const d=new Date(m.t||0); const hm=pad(d.getHours())+":"+pad(d.getMinutes());
     r.innerHTML='<div class="mw" style="color:'+(COL[m.who]||COL.a)+'">'+esc(whoName(m.who))+'</div>'
       +'<div class="mtx">'+esc(m.text)+'</div>'
-      +'<div class="mt">'+(d.getMonth()+1)+"."+d.getDate()+" "+hm+'</div>';
+      +'<div class="mt">'+(d.getMonth()+1)+"월 "+d.getDate()+"일 "+hm+'</div>';
     box.appendChild(r);
   });
 }
