@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>정용 ♥ 지영 — 우리 캘린더</title>
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <style>
@@ -13,8 +13,10 @@
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   body{margin:0; font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-    background:linear-gradient(160deg,#fff7fb 0%,#f3f7ff 100%); color:var(--ink); min-height:100vh;}
-  .wrap{max-width:720px; margin:0 auto; padding:18px 16px 60px;}
+    background:linear-gradient(160deg,#fff7fb 0%,#f3f7ff 100%); color:var(--ink); min-height:100vh;
+    -webkit-text-size-adjust:100%;}
+  .wrap{max-width:480px; margin:0 auto;
+    padding:calc(16px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(40px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));}
 
   /* header */
   .top{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:6px;}
@@ -30,13 +32,12 @@
   .hero .big{font-size:40px; font-weight:900; letter-spacing:-1px; margin:2px 0 2px; background:linear-gradient(90deg,var(--pink-deep),var(--blue-deep)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;}
   .hero .sub{font-size:12.5px; color:#a892a0;}
 
-  /* milestone chips */
-  .marks{display:flex; gap:9px; overflow-x:auto; padding-bottom:4px; margin-bottom:18px; scrollbar-width:none;}
-  .marks::-webkit-scrollbar{display:none;}
-  .mark{flex:none; background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:10px 14px; text-align:center; min-width:96px;}
+  /* milestone chips — 3칸 그리드로 D-day 박스와 폭 정렬 */
+  .marks{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:18px;}
+  .mark{background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:11px 6px; text-align:center;}
   .mark .mt{font-size:12px; color:var(--muted);}
-  .mark .md{font-size:18px; font-weight:800; color:var(--pink-deep); margin:2px 0;}
-  .mark .ms{font-size:11px; color:#b6a3ae;}
+  .mark .md{font-size:17px; font-weight:800; color:var(--pink-deep); margin:3px 0;}
+  .mark .ms{font-size:10.5px; color:#b6a3ae;}
 
   .card{background:var(--card); border-radius:18px; padding:16px; margin-bottom:16px; box-shadow:0 3px 14px rgba(150,120,140,.07);}
   .sec-title{font-weight:800; font-size:16px; margin:0 0 12px; display:flex; align-items:center; gap:7px;}
@@ -81,7 +82,7 @@
 
   /* input row */
   .irow{display:flex; gap:8px; margin-top:12px;}
-  .irow input[type=text]{flex:1; border:1.5px solid var(--line); border-radius:999px; padding:11px 16px; font:inherit; font-size:14px; outline:0;}
+  .irow input[type=text]{flex:1; min-width:0; border:1.5px solid var(--line); border-radius:999px; padding:11px 16px; font:inherit; font-size:16px; outline:0;}
   .irow input[type=text]:focus{border-color:var(--pink);}
   .add{border:0; background:var(--pink-deep); color:#fff; font:inherit; font-weight:700; padding:11px 18px; border-radius:999px; cursor:pointer; flex:none;}
 
@@ -92,7 +93,7 @@
   .modal h3{margin:0 0 4px; font-size:18px;}
   .modal .msub{font-size:12.5px; color:var(--muted); margin-bottom:14px;}
   .modal label{display:block; font-size:12.5px; color:#9a8591; font-weight:600; margin:12px 0 6px;}
-  .modal input[type=text],.modal input[type=date]{width:100%; border:1.5px solid var(--line); border-radius:11px; padding:11px 13px; font:inherit; font-size:14px; outline:0;}
+  .modal input[type=text],.modal input[type=date]{width:100%; border:1.5px solid var(--line); border-radius:11px; padding:11px 13px; font:inherit; font-size:16px; outline:0;}
   .modal input:focus{border-color:var(--pink);}
   .daylist{margin:6px 0 2px;}
   .dayev{display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid #f6ecf2; font-size:14px;}
