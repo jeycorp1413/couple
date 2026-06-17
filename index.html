@@ -301,10 +301,10 @@ const DAY=86400000;
 function renderDday(){
   const anv=midnight(parseD(SET.anniv)), today=midnight(new Date());
   const diff=Math.round((today-anv)/DAY);
-  const dday=diff+1; /* 사귄 날이 1일 */
-  document.getElementById("heroBig").textContent = diff>=0 ? ("D+"+diff) : ("D"+diff);
+  const dday=diff+1; /* 사귄 날이 1일 (당일 포함) */
+  document.getElementById("heroBig").textContent = diff>=0 ? ("D+"+dday) : ("D"+diff);
   document.getElementById("heroLbl").textContent = SET.a+" ♥ "+SET.b+" 함께한 지";
-  document.getElementById("heroSub").textContent = (diff>=0? (dday+"일째 · ") : "") + "시작일 "+SET.anniv;
+  document.getElementById("heroSub").textContent = "시작일 "+SET.anniv;
 
   /* milestones: 일수 기준 + 주년 기준, 다가오는 것 위주 */
   const marks=[];
