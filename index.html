@@ -135,6 +135,25 @@
 
   .warn{background:#fff3cd; color:#856404; border-radius:12px; padding:11px 13px; font-size:12.5px; margin-bottom:14px; display:none;}
   .empty{color:#cdb3bf; font-size:13px; padding:6px 2px;}
+
+  /* date photos */
+  .phday{margin-bottom:15px;}
+  .phday:last-child{margin-bottom:0;}
+  .phday .phd{font-size:13.5px; font-weight:800; color:var(--pink-deep); margin-bottom:8px;}
+  .phrow{display:flex; gap:8px; overflow-x:auto; padding-bottom:3px; -webkit-overflow-scrolling:touch;}
+  .phrow .ph{position:relative; flex:none; width:86px; height:86px; border-radius:13px; overflow:hidden; cursor:pointer; background:#fbf4f8;}
+  .phrow .ph img{width:100%; height:100%; object-fit:cover; display:block;}
+  .phadd{flex:none; width:86px; height:86px; border-radius:13px; border:1.5px dashed var(--pink); background:#fff; color:var(--pink-deep); font:inherit; font-size:12px; font-weight:700; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;}
+  .phadd .pe{font-size:21px; line-height:1;}
+  .phadd:active{background:#fceef4;}
+  /* lightbox */
+  .lb{position:fixed; inset:0; background:rgba(40,28,34,.9); display:none; align-items:center; justify-content:center; flex-direction:column; gap:16px; padding:20px; z-index:60;}
+  .lb.open{display:flex;}
+  .lb img{max-width:100%; max-height:70vh; border-radius:14px; box-shadow:0 8px 30px rgba(0,0,0,.4);}
+  .lbbtns{display:flex; gap:10px;}
+  .lbbtn{border:0; font:inherit; font-weight:700; padding:12px 24px; border-radius:999px; cursor:pointer;}
+  .lbbtn.save{background:#fff; color:var(--pink-deep);}
+  .lbbtn.del{background:rgba(255,255,255,.18); color:#fff;}
 </style>
 </head>
 <body>
@@ -169,6 +188,12 @@
       <button class="cal-nav" id="nextM">›</button>
     </div>
     <div class="grid" id="calGrid"></div>
+  </div>
+
+  <!-- 데이트 사진 -->
+  <div class="card">
+    <div class="sec-title">📸 데이트 사진 기록</div>
+    <div id="photoList"></div>
   </div>
 
   <!-- todo -->
@@ -247,6 +272,16 @@
   </div>
 </div>
 
+<!-- 사진 업로드 + 크게보기 -->
+<input type="file" id="photoInput" accept="image/*" style="display:none">
+<div class="lb" id="lbOv">
+  <img id="lbImg" alt="데이트 사진">
+  <div class="lbbtns">
+    <button class="lbbtn save" id="lbSave">⬇ 저장</button>
+    <button class="lbbtn del" id="lbDel">🗑 삭제</button>
+  </div>
+</div>
+
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
@@ -282,8 +317,9 @@ const HOLIDAYS = {
   "2027-12-25":"성탄절","2027-12-27":"대체공휴일",
 };
 let SET = {a:"지영", b:"정용", anniv:"2026-06-11"};
-let EVENTS=[], TODOS=[], MEMOS=[], ANNIVS=[], WISHES=[];
+let EVENTS=[], TODOS=[], MEMOS=[], ANNIVS=[], WISHES=[], PHOTOS=[];
 let evWho="a", memoWho="a";
+let uploadDate=null, lbId=null, lbImgSrc=null, lbDate=null;
 const now=new Date();
 let viewY=now.getFullYear(), viewM=now.getMonth();
 let curDay=null;
@@ -489,6 +525,52 @@ function addWish(){ const t=document.getElementById("wishText").value.trim(); if
   document.getElementById("wishText").value="";
 }
 
+/* ---- 데이트 사진 ---- */
+function renderPhotos(){
+  const box=document.getElementById("photoList");
+  const dateSet={};
+  EVENTS.filter(e=>e.cat==="date").forEach(e=>{ dateSet[e.date]=true; });
+  PHOTOS.forEach(p=>{ if(p.date) dateSet[p.date]=true; });
+  const dates=Object.keys(dateSet).sort((a,b)=>a<b?1:-1); /* 최근 날짜 먼저 */
+  if(!dates.length){ box.innerHTML='<div class="empty">달력에서 💕 데이트 일정을 추가하면 여기에 사진을 기록할 수 있어요</div>'; return; }
+  box.innerHTML="";
+  dates.forEach(ds=>{
+    const dt=parseD(ds), wk=["일","월","화","수","목","금","토"][dt.getDay()];
+    const day=document.createElement("div"); day.className="phday";
+    const h=document.createElement("div"); h.className="phd"; h.textContent="💕 "+(dt.getMonth()+1)+"월 "+dt.getDate()+"일 ("+wk+")";
+    day.appendChild(h);
+    const row=document.createElement("div"); row.className="phrow";
+    PHOTOS.filter(p=>p.date===ds).sort((a,b)=>(a.t||0)-(b.t||0)).forEach(p=>{
+      const c=document.createElement("div"); c.className="ph";
+      const im=document.createElement("img"); im.src=p.img; c.appendChild(im);
+      c.onclick=()=>openLb(p); row.appendChild(c);
+    });
+    const add=document.createElement("button"); add.className="phadd"; add.innerHTML='<span class="pe">＋</span>사진';
+    add.onclick=()=>{ uploadDate=ds; document.getElementById("photoInput").click(); };
+    row.appendChild(add); day.appendChild(row); box.appendChild(day);
+  });
+}
+function compressImage(file, cb){
+  const reader=new FileReader();
+  reader.onload=e=>{ const img=new Image();
+    img.onload=()=>{ const max=1000; let w=img.width, h=img.height;
+      if(w>h && w>max){ h=Math.round(h*max/w); w=max; } else if(h>=w && h>max){ w=Math.round(w*max/h); h=max; }
+      const cv=document.createElement("canvas"); cv.width=w; cv.height=h;
+      cv.getContext("2d").drawImage(img,0,0,w,h);
+      cb(cv.toDataURL("image/jpeg",0.72));
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function openLb(p){ lbId=p.id; lbImgSrc=p.img; lbDate=p.date; document.getElementById("lbImg").src=p.img; document.getElementById("lbOv").classList.add("open"); }
+function savePhoto(){
+  if(!lbImgSrc) return;
+  const a=document.createElement("a"); a.href=lbImgSrc;
+  a.download="데이트_"+(lbDate||"사진")+"_"+(lbId||"").slice(-4)+".jpg";
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
 /* ---- memo ---- */
 function renderMemos(){
   const box=document.getElementById("memoList");
@@ -524,7 +606,7 @@ function saveSet(){
   document.getElementById("setOv").classList.remove("open");
 }
 
-function refreshAll(){ renderDday(); renderAnnivs(); renderCal(); renderTodos(); renderWishes(); renderMemos(); renderMemoWho();
+function refreshAll(){ renderDday(); renderAnnivs(); renderCal(); renderPhotos(); renderTodos(); renderWishes(); renderMemos(); renderMemoWho();
   document.querySelector(".top h1").innerHTML='<span class="y">'+esc(SET.b)+'</span> ♥ <span class="h">'+esc(SET.a)+'</span>';
 }
 
@@ -541,6 +623,15 @@ document.getElementById("wishText").addEventListener("keydown",e=>{ if(e.key==="
 document.getElementById("annivAdd").onclick=openAnniv;
 document.getElementById("annivCancel").onclick=()=>document.getElementById("annivOv").classList.remove("open");
 document.getElementById("annivSave").onclick=saveAnniv;
+document.getElementById("photoInput").addEventListener("change",e=>{
+  const f=e.target.files&&e.target.files[0]; e.target.value="";
+  if(!f||!uploadDate) return;
+  if(!db){ alert("실시간 연결 후 사진을 올릴 수 있어요"); return; }
+  compressImage(f, url=>{ db.ref(ROOT+"/photos").push({date:uploadDate, img:url, t:Date.now()}); });
+});
+document.getElementById("lbSave").onclick=savePhoto;
+document.getElementById("lbDel").onclick=()=>{ if(db&&lbId) db.ref(ROOT+"/photos/"+lbId).remove(); document.getElementById("lbOv").classList.remove("open"); };
+document.getElementById("lbOv").onclick=e=>{ if(e.target.id==="lbOv") document.getElementById("lbOv").classList.remove("open"); };
 document.getElementById("gearBtn").onclick=openSet;
 document.getElementById("setClose").onclick=()=>document.getElementById("setOv").classList.remove("open");
 document.getElementById("setSave").onclick=saveSet;
@@ -555,7 +646,8 @@ function start(){
   firebase.initializeApp(firebaseConfig); db=firebase.database();
   live.className="live on"; live.textContent="● 실시간 연결됨 — 둘이 함께 보고 있어요";
   db.ref(ROOT+"/settings").on("value",s=>{ const v=s.val(); if(v){ SET=Object.assign(SET,v); } else { db.ref(ROOT+"/settings").set(SET); } refreshAll(); });
-  db.ref(ROOT+"/events").on("value",s=>{ const v=s.val()||{}; EVENTS=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderCal(); if(curDay&&document.getElementById("dayOv").classList.contains("open")) renderDayList(); });
+  db.ref(ROOT+"/events").on("value",s=>{ const v=s.val()||{}; EVENTS=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderCal(); renderPhotos(); if(curDay&&document.getElementById("dayOv").classList.contains("open")) renderDayList(); });
+  db.ref(ROOT+"/photos").on("value",s=>{ const v=s.val()||{}; PHOTOS=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderPhotos(); });
   db.ref(ROOT+"/todos").on("value",s=>{ const v=s.val()||{}; TODOS=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderTodos(); });
   db.ref(ROOT+"/memos").on("value",s=>{ const v=s.val()||{}; MEMOS=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderMemos(); });
   db.ref(ROOT+"/anniversaries").on("value",s=>{ const v=s.val()||{}; ANNIVS=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderAnnivs(); });
