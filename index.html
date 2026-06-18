@@ -166,7 +166,9 @@
   .anniv.pinned .ad{color:var(--pink-deep);}
 
   /* fold */
-  .sec-title.fold-head{cursor:pointer;}
+  .sec-title.fold-head{cursor:pointer; margin-bottom:0;}
+  #tripBody{margin-top:15px;}
+  #photoList{margin-top:14px;}
   .fold{margin-left:auto; color:var(--muted); font-size:13px;}
 
   /* trip */
@@ -649,10 +651,10 @@ function renderPrep(){
   cats.forEach(cat=>{
     const blk=document.createElement("div"); blk.className="trip-day";
     const top=document.createElement("div"); top.className="td-top";
-    const h=document.createElement("div"); h.className="td-h"; h.textContent=cat.label||"";
-    const ed=document.createElement("button"); ed.className="td-x"; ed.textContent="✏️"; ed.onclick=()=>{ const nl=prompt("칸 이름", cat.label||""); if(nl===null) return; if(db) db.ref(ROOT+"/trip/prep/"+cat.key+"/label").set(nl.trim()); };
+    const h=document.createElement("div"); h.className="td-h tx-edit"; h.textContent=cat.label||""; h.title="눌러서 이름 수정";
+    h.onclick=()=>{ const nl=prompt("칸 이름", cat.label||""); if(nl===null||!db) return; db.ref(ROOT+"/trip/prep/"+cat.key+"/label").set(nl.trim()); };
     const del=document.createElement("button"); del.className="td-x"; del.textContent="✕"; del.onclick=()=>{ if(confirm("이 칸을 통째로 지울까요?")&&db) db.ref(ROOT+"/trip/prep/"+cat.key).remove(); };
-    top.append(h, ed, del); blk.appendChild(top);
+    top.append(h, del); blk.appendChild(top);
     const items=cat.items?Object.keys(cat.items).map(k=>Object.assign({ikey:k},cat.items[k])).sort((a,b)=>(a.t||0)-(b.t||0)):[];
     items.forEach(it=>{
       const r=document.createElement("div"); r.className="prep-item";
