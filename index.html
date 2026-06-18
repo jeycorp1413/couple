@@ -189,6 +189,18 @@
   .prep-irow{margin-top:8px;}
   .tx-edit{cursor:pointer;}
   .prep-irow input{font-size:14px; padding:9px 13px;}
+  .prep-legend{display:flex; gap:10px; align-items:center; font-size:11.5px; color:var(--muted); margin:6px 0 4px;}
+  .prep-legend .lg{display:inline-flex; align-items:center; gap:4px; font-weight:700;}
+  .prep-legend .sw{width:12px; height:12px; border-radius:4px;}
+  .prep-legend .lgt{margin-left:auto;}
+  .prep-item{display:flex; align-items:center; gap:7px; padding:9px 2px; border-bottom:1px solid #f6ecf2;}
+  .prep-item:last-child{border-bottom:0;}
+  .pchk{width:25px; height:25px; border-radius:7px; border:2px solid; background:#fff; cursor:pointer; flex:none; display:flex; align-items:center; justify-content:center; color:#fff; font-size:13px; padding:0;}
+  .pchk.a{border-color:var(--pink);} .pchk.a.on{background:var(--pink);}
+  .pchk.b{border-color:var(--blue);} .pchk.b.on{background:var(--blue);}
+  .prep-item .tx{flex:1; font-size:14.5px; min-width:0;}
+  .prep-item .tx.both{text-decoration:line-through; color:#c5b3bd;}
+  .prep-item .del{border:0; background:none; color:#d6bcc8; cursor:pointer; font-size:15px; flex:none;}
   .tripbtn{margin-left:0;}
   .cell.trip{background:#eef7ff;}
   .trip-dot{font-size:9px; line-height:1.1;}
@@ -619,6 +631,9 @@ function renderPrep(){
   const box=document.getElementById("tripPrep"); if(!box) return; box.innerHTML="";
   const cats=TRIP.prep?Object.keys(TRIP.prep).map(k=>Object.assign({key:k},TRIP.prep[k])).sort((a,b)=>(a.order||0)-(b.order||0)):[];
   if(!cats.length){ box.innerHTML='<div class="empty">+ 준비물 칸을 추가해보세요</div>'; return; }
+  const lg=document.createElement("div"); lg.className="prep-legend";
+  lg.innerHTML='<span class="lg"><span class="sw" style="background:'+COL.b+'"></span>'+esc(SET.b)+'</span><span class="lg"><span class="sw" style="background:'+COL.a+'"></span>'+esc(SET.a)+'</span><span class="lgt">각자 체크해요</span>';
+  box.appendChild(lg);
   cats.forEach(cat=>{
     const blk=document.createElement("div"); blk.className="trip-day";
     const top=document.createElement("div"); top.className="td-top";
@@ -628,15 +643,17 @@ function renderPrep(){
     top.append(h, ed, del); blk.appendChild(top);
     const items=cat.items?Object.keys(cat.items).map(k=>Object.assign({ikey:k},cat.items[k])).sort((a,b)=>(a.t||0)-(b.t||0)):[];
     items.forEach(it=>{
-      const r=document.createElement("div"); r.className="todo"+(it.done?" done":"");
-      const c=document.createElement("div"); c.className="chk"; c.textContent=it.done?"✓":"";
-      c.onclick=()=>{ if(db) db.ref(ROOT+"/trip/prep/"+cat.key+"/items/"+it.ikey+"/done").set(!it.done); };
-      const tx=document.createElement("div"); tx.className="tx tx-edit"; tx.textContent=it.text; tx.title="눌러서 수정";
+      const r=document.createElement("div"); r.className="prep-item";
+      const cb=document.createElement("button"); cb.className="pchk b"+(it.doneB?" on":""); cb.textContent=it.doneB?"✓":""; cb.title=SET.b;
+      cb.onclick=()=>{ if(db) db.ref(ROOT+"/trip/prep/"+cat.key+"/items/"+it.ikey+"/doneB").set(!it.doneB); };
+      const ca=document.createElement("button"); ca.className="pchk a"+(it.doneA?" on":""); ca.textContent=it.doneA?"✓":""; ca.title=SET.a;
+      ca.onclick=()=>{ if(db) db.ref(ROOT+"/trip/prep/"+cat.key+"/items/"+it.ikey+"/doneA").set(!it.doneA); };
+      const tx=document.createElement("div"); tx.className="tx tx-edit"+((it.doneA&&it.doneB)?" both":""); tx.textContent=it.text; tx.title="눌러서 수정";
       tx.onclick=()=>{ const nt=prompt("준비물 수정", it.text||""); if(nt===null||!db) return; const t=nt.trim();
         if(!t) db.ref(ROOT+"/trip/prep/"+cat.key+"/items/"+it.ikey).remove();
         else db.ref(ROOT+"/trip/prep/"+cat.key+"/items/"+it.ikey+"/text").set(t); };
       const x=document.createElement("button"); x.className="del"; x.textContent="✕"; x.onclick=()=>{ if(db) db.ref(ROOT+"/trip/prep/"+cat.key+"/items/"+it.ikey).remove(); };
-      r.append(c, tx, x); blk.appendChild(r);
+      r.append(cb, ca, tx, x); blk.appendChild(r);
     });
     const irow=document.createElement("div"); irow.className="irow prep-irow";
     const inp=document.createElement("input"); inp.type="text"; inp.placeholder="+ 준비물 추가";
