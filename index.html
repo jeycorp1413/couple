@@ -158,6 +158,7 @@
   .mkitem.fresh{background:#fff6fa; border-radius:10px;}
   .mkitem .mke{font-size:18px; flex:none;}
   .mkitem .mkt{margin-left:auto; font-size:11px; color:#c2adb6; white-space:nowrap;}
+  .mkitem .mkx{border:0; background:none; color:#d6bcc8; cursor:pointer; font-size:14px; flex:none; padding:0 0 0 2px;}
 
   /* pinned anniv */
   .anniv.pinned{background:linear-gradient(135deg,#fff0f6,#fde9f1); border-radius:13px; padding:11px 13px; border-bottom:0; margin-bottom:6px;}
@@ -666,7 +667,9 @@ function renderMakeups(){
     const d=new Date(m.t||0); const hm=pad(d.getHours())+":"+pad(d.getMinutes());
     const em=m.emoji||(MK_FB[m.type]?MK_FB[m.type][0]:"💗"); const label=m.label||(MK_FB[m.type]?MK_FB[m.type][1]:(m.type||""));
     r.innerHTML='<span class="mke">'+em+'</span><span><b style="color:'+(COL[m.who]||COL.a)+'">'+esc(whoName(m.who))+'</b> '+esc(label)+(m.msg?(" — "+esc(m.msg)):"")+'</span><span class="mkt">'+(d.getMonth()+1)+"/"+d.getDate()+" "+hm+'</span>';
-    box.appendChild(r);
+    const x=document.createElement("button"); x.className="mkx"; x.textContent="✕";
+    x.onclick=()=>{ if(db&&m.id) db.ref(ROOT+"/makeups/"+m.id).remove(); };
+    r.appendChild(x); box.appendChild(r);
   });
 }
 
