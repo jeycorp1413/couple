@@ -170,9 +170,10 @@
   .fold{margin-left:auto; color:var(--muted); font-size:13px;}
 
   /* scroll reveal */
-  .reveal{opacity:0; transform:translateY(20px); transition:opacity .55s ease, transform .55s ease;}
-  .reveal.in{opacity:1; transform:none;}
-  @media (prefers-reduced-motion: reduce){ .reveal{opacity:1; transform:none; transition:none;} }
+  .reveal{opacity:0; transform:translateY(60px) scale(.9); filter:blur(6px);
+    transition:opacity .6s ease, transform .7s cubic-bezier(.2,.8,.2,1.15), filter .6s ease;}
+  .reveal.in{opacity:1; transform:none; filter:none;}
+  @media (prefers-reduced-motion: reduce){ .reveal{opacity:1; transform:none; filter:none; transition:none;} }
 
   /* date photos */
   .phday{margin-bottom:15px;}
