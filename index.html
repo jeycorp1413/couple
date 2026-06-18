@@ -273,7 +273,7 @@
 </div>
 
 <!-- 사진 업로드 + 크게보기 -->
-<input type="file" id="photoInput" accept="image/*" style="display:none">
+<input type="file" id="photoInput" accept="image/*" multiple style="display:none">
 <div class="lb" id="lbOv">
   <img id="lbImg" alt="데이트 사진">
   <div class="lbbtns">
@@ -623,10 +623,11 @@ document.getElementById("annivAdd").onclick=openAnniv;
 document.getElementById("annivCancel").onclick=()=>document.getElementById("annivOv").classList.remove("open");
 document.getElementById("annivSave").onclick=saveAnniv;
 document.getElementById("photoInput").addEventListener("change",e=>{
-  const f=e.target.files&&e.target.files[0]; e.target.value="";
-  if(!f||!uploadDate) return;
+  const files=Array.from(e.target.files||[]); e.target.value="";
+  if(!files.length||!uploadDate) return;
   if(!db){ alert("실시간 연결 후 사진을 올릴 수 있어요"); return; }
-  compressImage(f, url=>{ db.ref(ROOT+"/photos").push({date:uploadDate, img:url, t:Date.now()}); });
+  const date=uploadDate;
+  files.forEach((f,i)=>{ compressImage(f, url=>{ db.ref(ROOT+"/photos").push({date:date, img:url, t:Date.now()+i}); }); });
 });
 document.getElementById("lbSave").onclick=savePhoto;
 document.getElementById("lbDel").onclick=()=>{ if(db&&lbId) db.ref(ROOT+"/photos/"+lbId).remove(); document.getElementById("lbOv").classList.remove("open"); };
