@@ -202,6 +202,8 @@
   .pchk.b{border-color:var(--blue);} .pchk.b.on{background:var(--blue);}
   .prep-item .tx{flex:1; font-size:14.5px; min-width:0;}
   .prep-item .tx.both{text-decoration:line-through; color:#c5b3bd;}
+  .food-by{font-size:10.5px; color:#b6a3ae; font-weight:600; flex:none;}
+  .food-add{margin-top:8px;}
   .prep-item .del{border:0; background:none; color:#d6bcc8; cursor:pointer; font-size:15px; flex:none;}
   .cmt-wrap{margin-top:9px; border-top:1px dashed #f0dde7; padding-top:8px;}
   .cmt{font-size:12.5px; color:#6a5a62; padding:4px 0; display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
@@ -249,7 +251,7 @@
 <body>
 <div class="wrap">
   <div class="top">
-    <h1><span class="y">정용</span> ♥ <span class="h">지영</span></h1>
+    <h1><span class="y">정용</span> 💗 <span class="h">지영</span></h1>
     <button class="gear" id="gearBtn" title="설정">⚙️</button>
   </div>
   <div class="live" id="liveTag">● 연결 중…</div>
@@ -273,7 +275,7 @@
       <button class="mini-add tripbtn" id="tripDayAdd">+ 일정 추가</button>
       <div class="trip-foods-title">🍽️ 가고싶은 맛집</div>
       <div id="tripFoods"></div>
-      <div class="irow"><input type="text" id="foodText" placeholder="맛집·메뉴를 적어보세요…"><button class="add" id="foodAdd">추가</button></div>
+      <div class="cmt-input food-add"><div class="cmt-who-sel" id="foodWhoSel"></div><input type="text" id="foodText" placeholder="맛집·메뉴를 적어보세요…"><button class="cmt-add" id="foodAdd">추가</button></div>
       <div class="trip-foods-title">🎒 준비물</div>
       <div id="tripPrep"></div>
       <button class="mini-add tripbtn" id="tripPrepAdd">+ 준비물 추가</button>
@@ -437,10 +439,10 @@ const HOLIDAYS = {
 };
 let SET = {a:"지영", b:"정용", anniv:"2026-06-11"};
 let EVENTS=[], TODOS=[], MEMOS=[], ANNIVS=[], WISHES=[], PHOTOS=[], MAKEUPS=[];
-let evWho="a", memoWho="a", mkWho="a", photoOpen=false, tripOpen=false, issueWho="a";
+let evWho="a", memoWho="a", mkWho="a", photoOpen=false, tripOpen=false, issueWho="a", foodWho="a";
 let TRIP={};
 const TRIP_SEED={
-  title:"보홀 4박 6일 여행",
+  title:"보홀 4박 6일 여행 💗",
   range:"2026.07.27(월) ~ 08.01(토) · 4박 6일 · 성인 1명",
   start:"2026-07-27", end:"2026-08-01",
   info:"✈️ 가는편 7/27 20:40 부산 → 00:30 보홀(+1일)\n✈️ 오는편 8/1 01:30 보홀 → 06:55 부산\n🏨 Bohol Beach Club 3박(7/28~30) + Henann Alona Beach 1박(7/31)\n⏰ 현지시각 기준 (한국보다 1시간 느림)",
@@ -453,7 +455,7 @@ const TRIP_SEED={
     d6:{order:6, label:"Day 6 · 8/1(토) 귀국", body:"01:30 보홀 출발 → 기내 취침\n06:55 부산(PUS) 도착, 여행 종료 🛬"}
   },
   foods:{},
-  seeded2:true, seeded3:true,
+  seeded2:true, seeded3:true, heart:true,
   prep:{
     p1:{order:1, label:"입국/서류", items:{
       a:{text:"여권 무비자 30일 (유효기간 6개월 이상 확인)", done:false, t:1},
@@ -569,7 +571,7 @@ function renderTrip(){
   document.getElementById("tripMeta").innerHTML =
     (TRIP.range?'<div class="tm-range">'+esc(TRIP.range)+'</div>':"")+
     (TRIP.info?'<div class="tm-info">'+nl2br(TRIP.info)+'</div>':"");
-  renderTripDays(); renderTripFoods();
+  renderTripDays(); renderFoods(); renderFoodWho();
   renderPrep();
   renderIssues();
 }
@@ -612,7 +614,7 @@ function renderTripFoods(){
   });
 }
 function addFood(){ const t=document.getElementById("foodText").value.trim(); if(!t) return;
-  if(db) db.ref(ROOT+"/trip/foods").push({text:t, done:false, t:Date.now()});
+  if(db) db.ref(ROOT+"/trip/foods").push({text:t, by:foodWho, doneA:false, doneB:false, t:Date.now()});
   document.getElementById("foodText").value=""; }
 /* 준비물·이슈 등 칸별 섹션 (라벨+내용) 공통 렌더/편집 */
 function renderSecList(path, boxId, emptyMsg){
@@ -680,6 +682,56 @@ function renderPrep(){
 }
 function addPrepCat(){ const cats=TRIP.prep?Object.values(TRIP.prep):[]; const maxO=cats.reduce((m,c)=>Math.max(m,c.order||0),0);
   if(db) db.ref(ROOT+"/trip/prep").push({order:maxO+1, label:"새 칸", items:{}}); }
+/* 이름 댓글 (이슈·맛집 공용) — pathBase 아래 comments/* 에 저장 */
+function attachComments(pathBase, comments){
+  const cwrap=document.createElement("div"); cwrap.className="cmt-wrap";
+  const cmts=comments?Object.keys(comments).map(k=>Object.assign({ckey:k},comments[k])).sort((a,b)=>(a.t||0)-(b.t||0)):[];
+  cmts.forEach(cm=>{
+    const c=document.createElement("div"); c.className="cmt"; const d=new Date(cm.t||0);
+    c.innerHTML='<span class="cmt-who" style="color:'+(COL[cm.who]||COL.a)+'">'+esc(whoName(cm.who))+'</span><span class="cmt-tx">'+esc(cm.text)+'</span><span class="cmt-t">'+(d.getMonth()+1)+"/"+d.getDate()+" "+pad(d.getHours())+":"+pad(d.getMinutes())+'</span>';
+    const x=document.createElement("button"); x.className="cmt-x"; x.textContent="✕"; x.onclick=()=>{ if(db) db.ref(pathBase+"/comments/"+cm.ckey).remove(); };
+    c.appendChild(x); cwrap.appendChild(c);
+  });
+  const irow=document.createElement("div"); irow.className="cmt-input";
+  const wsel=document.createElement("div"); wsel.className="cmt-who-sel"; let lwho=issueWho; const btns={};
+  ["a","b"].forEach(k=>{ const b=document.createElement("button"); b.textContent=(k==="a"?SET.a:SET.b); b.onclick=()=>{ lwho=k; issueWho=k; paintW(); }; wsel.appendChild(b); btns[k]=b; });
+  function paintW(){ ["a","b"].forEach(k=>{ const b=btns[k]; if(k===lwho){ b.classList.add("on"); b.style.background=COL[k]; } else { b.classList.remove("on"); b.style.background="#fff"; } }); }
+  paintW();
+  const inp=document.createElement("input"); inp.type="text"; inp.placeholder="댓글 달기…";
+  const add=()=>{ const t=inp.value.trim(); if(!t||!db) return; db.ref(pathBase+"/comments").push({who:lwho, text:t, t:Date.now()}); inp.value=""; };
+  inp.addEventListener("keydown",e=>{ if(e.key==="Enter") add(); });
+  const ab=document.createElement("button"); ab.className="cmt-add"; ab.textContent="등록"; ab.onclick=add;
+  irow.append(wsel, inp, ab); cwrap.appendChild(irow);
+  return cwrap;
+}
+/* 맛집 — 2인 체크 + 적은이 + 댓글 */
+function renderFoodWho(){
+  const box=document.getElementById("foodWhoSel"); if(!box) return; box.innerHTML="";
+  ["a","b"].forEach(k=>{ const b=document.createElement("button"); b.textContent=(k==="a"?SET.a:SET.b); if(k===foodWho){ b.classList.add("on"); b.style.background=COL[k]; } b.onclick=()=>{ foodWho=k; renderFoodWho(); }; box.appendChild(b); });
+}
+function renderFoods(){
+  const box=document.getElementById("tripFoods"); if(!box) return; box.innerHTML="";
+  const foods=TRIP.foods?Object.keys(TRIP.foods).map(k=>Object.assign({key:k},TRIP.foods[k])):[];
+  if(!foods.length){ box.innerHTML='<div class="empty">가고 싶은 맛집을 적어보세요!</div>'; return; }
+  const lg=document.createElement("div"); lg.className="prep-legend";
+  lg.innerHTML='<span class="lg"><span class="sw" style="background:'+COL.b+'"></span>'+esc(SET.b)+'</span><span class="lg"><span class="sw" style="background:'+COL.a+'"></span>'+esc(SET.a)+'</span><span class="lgt">가봤으면 체크</span>';
+  box.appendChild(lg);
+  foods.sort((a,b)=>(a.t||0)-(b.t||0)).forEach(f=>{
+    const blk=document.createElement("div"); blk.className="trip-day";
+    const top=document.createElement("div"); top.className="prep-item";
+    const cb=document.createElement("button"); cb.className="pchk b"+(f.doneB?" on":""); cb.textContent=f.doneB?"✓":""; cb.title=SET.b;
+    cb.onclick=()=>{ if(db) db.ref(ROOT+"/trip/foods/"+f.key+"/doneB").set(!f.doneB); };
+    const ca=document.createElement("button"); ca.className="pchk a"+(f.doneA?" on":""); ca.textContent=f.doneA?"✓":""; ca.title=SET.a;
+    ca.onclick=()=>{ if(db) db.ref(ROOT+"/trip/foods/"+f.key+"/doneA").set(!f.doneA); };
+    const tx=document.createElement("div"); tx.className="tx tx-edit"; tx.textContent=f.text; tx.title="눌러서 수정";
+    tx.onclick=()=>{ const nt=prompt("맛집 수정", f.text||""); if(nt===null||!db) return; const t=nt.trim(); if(!t) db.ref(ROOT+"/trip/foods/"+f.key).remove(); else db.ref(ROOT+"/trip/foods/"+f.key+"/text").set(t); };
+    const by=document.createElement("span"); by.className="food-by"; if(f.by) by.textContent=whoName(f.by)+" 적음";
+    const x=document.createElement("button"); x.className="del"; x.textContent="✕"; x.onclick=()=>{ if(db) db.ref(ROOT+"/trip/foods/"+f.key).remove(); };
+    top.append(cb, ca, tx, by, x); blk.appendChild(top);
+    blk.appendChild(attachComments(ROOT+"/trip/foods/"+f.key, f.comments));
+    box.appendChild(blk);
+  });
+}
 /* 이슈·메모 — 칸별 + 이름 댓글 */
 function renderIssues(){
   const box=document.getElementById("tripIssues"); if(!box) return; box.innerHTML="";
@@ -692,24 +744,7 @@ function renderIssues(){
     const ed=document.createElement("button"); ed.className="td-x"; ed.textContent="✏️"; ed.onclick=()=>editSec("issues", it, blk, "tripIssues", "+ 이슈/메모 칸을 추가해보세요");
     const del=document.createElement("button"); del.className="td-x"; del.textContent="✕"; del.onclick=()=>{ if(confirm("이 칸을 지울까요?")&&db) db.ref(ROOT+"/trip/issues/"+it.key).remove(); };
     top.append(ed, del);
-    const cwrap=document.createElement("div"); cwrap.className="cmt-wrap";
-    const cmts=it.comments?Object.keys(it.comments).map(k=>Object.assign({ckey:k},it.comments[k])).sort((a,b)=>(a.t||0)-(b.t||0)):[];
-    cmts.forEach(cm=>{
-      const c=document.createElement("div"); c.className="cmt"; const d=new Date(cm.t||0);
-      c.innerHTML='<span class="cmt-who" style="color:'+(COL[cm.who]||COL.a)+'">'+esc(whoName(cm.who))+'</span><span class="cmt-tx">'+esc(cm.text)+'</span><span class="cmt-t">'+(d.getMonth()+1)+"/"+d.getDate()+" "+pad(d.getHours())+":"+pad(d.getMinutes())+'</span>';
-      const x=document.createElement("button"); x.className="cmt-x"; x.textContent="✕"; x.onclick=()=>{ if(db) db.ref(ROOT+"/trip/issues/"+it.key+"/comments/"+cm.ckey).remove(); };
-      c.appendChild(x); cwrap.appendChild(c);
-    });
-    const irow=document.createElement("div"); irow.className="cmt-input";
-    const wsel=document.createElement("div"); wsel.className="cmt-who-sel"; let lwho=issueWho; const btns={};
-    ["a","b"].forEach(k=>{ const b=document.createElement("button"); b.textContent=(k==="a"?SET.a:SET.b); b.onclick=()=>{ lwho=k; issueWho=k; paintW(); }; wsel.appendChild(b); btns[k]=b; });
-    function paintW(){ ["a","b"].forEach(k=>{ const b=btns[k]; if(k===lwho){ b.classList.add("on"); b.style.background=COL[k]; } else { b.classList.remove("on"); b.style.background="#fff"; } }); }
-    paintW();
-    const inp=document.createElement("input"); inp.type="text"; inp.placeholder="댓글 달기…";
-    const add=()=>{ const t=inp.value.trim(); if(!t||!db) return; db.ref(ROOT+"/trip/issues/"+it.key+"/comments").push({who:lwho, text:t, t:Date.now()}); inp.value=""; };
-    inp.addEventListener("keydown",e=>{ if(e.key==="Enter") add(); });
-    const ab=document.createElement("button"); ab.className="cmt-add"; ab.textContent="등록"; ab.onclick=add;
-    irow.append(wsel, inp, ab); cwrap.appendChild(irow); blk.appendChild(cwrap);
+    blk.appendChild(attachComments(ROOT+"/trip/issues/"+it.key, it.comments));
     box.appendChild(blk);
   });
 }
@@ -999,7 +1034,7 @@ function saveSet(){
 }
 
 function refreshAll(){ renderDday(); renderAnnivs(); renderCal(); renderTrip(); renderPhotos(); renderMakeups(); renderMkWho(); renderMkBtns(); renderTodos(); renderWishes(); renderMemos(); renderMemoWho();
-  document.querySelector(".top h1").innerHTML='<span class="y">'+esc(SET.b)+'</span> ♥ <span class="h">'+esc(SET.a)+'</span>';
+  document.querySelector(".top h1").innerHTML='<span class="y">'+esc(SET.b)+'</span> 💗 <span class="h">'+esc(SET.a)+'</span>';
 }
 
 /* ---- wire ---- */
@@ -1062,6 +1097,7 @@ function start(){
         if(!items){ items={}; String(p.body||"").split("\n").map(x=>x.trim()).filter(Boolean).forEach((line,i)=>{ items["m"+i]={text:line, done:false, t:i+1}; }); }
         np[k]={order:p.order||0, label:p.label||"", items:items}; });
       db.ref(ROOT+"/trip").update({prep:np, seeded3:true}); return; }
+    if(!v.heart){ db.ref(ROOT+"/trip").update({title:"보홀 4박 6일 여행 💗", heart:true}); return; }
     TRIP=v; renderTrip(); renderCal(); });
   setInterval(renderDday, 60000);
 }
