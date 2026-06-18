@@ -416,11 +416,11 @@ function renderCats(){
   document.getElementById("subMeet").style.display="none";
   CATS.forEach(c=>{ const b=document.createElement("button"); b.className="catbtn";
     b.innerHTML='<span class="ce">'+c.e+'</span>'+c.l;
-    b.onclick=()=>{ if(c.k==="meet") showMeetSub(); else if(c.k==="trip") showTripForm(); else addCat(c.k,null); };
+    b.onclick=()=>{ if(c.k==="meet") showMeetSub(); else if(c.k==="trip") showTripForm(); else { if(c.k==="date"){ evWho="both"; renderEvWho(); } addCat(c.k,null); } };
     box.appendChild(b); });
 }
 function showMeetSub(){ const s=document.getElementById("subMeet"); s.style.display="block"; s.innerHTML="";
-  const inp=document.createElement("input"); inp.type="text"; inp.id="evPlace"; inp.className="placein"; inp.placeholder="📍 장소 입력 (필수)";
+  const inp=document.createElement("input"); inp.type="text"; inp.id="evPlace"; inp.className="placein"; inp.placeholder="📍 장소 (선택) — 비워도 돼요";
   s.appendChild(inp);
   const row=document.createElement("div"); row.className="submeet-row";
   [["same","👬 동성만"],["mixed","👫 이성 포함"]].forEach(([k,l])=>{ const b=document.createElement("button"); b.className="subbtn"; b.textContent=l;
@@ -437,8 +437,7 @@ function showTripForm(){ const s=document.getElementById("subMeet"); s.style.dis
 function addCat(cat, meet){ if(!curDay) return;
   const who = cat==="date" ? "both" : evWho; /* 데이트는 무조건 함께 */
   let place=null, time=null;
-  if(cat==="meet"){ const p=document.getElementById("evPlace"); place=p?p.value.trim():"";
-    if(!place){ if(p){ p.style.borderColor="#e8607f"; p.placeholder="📍 장소를 입력해주세요!"; p.focus(); } return; } }
+  if(cat==="meet"){ const p=document.getElementById("evPlace"); place=p?p.value.trim():""; }
   if(cat==="trip"){ const p=document.getElementById("tripPlace"); place=p?p.value.trim():""; const tm=document.getElementById("tripTime"); time=tm?tm.value.trim():""; }
   const ev={date:curDay, who:who, cat:cat, meet:meet||null, place:place||null, time:time||null, t:Date.now()};
   if(db) db.ref(ROOT+"/events").push(ev);
