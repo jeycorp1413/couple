@@ -136,23 +136,6 @@
   .warn{background:#fff3cd; color:#856404; border-radius:12px; padding:11px 13px; font-size:12.5px; margin-bottom:14px; display:none;}
   .empty{color:#cdb3bf; font-size:13px; padding:6px 2px;}
 
-  /* mood */
-  .moodrow{display:flex; align-items:center; gap:10px; padding:9px 2px; border-bottom:1px solid #f6ecf2;}
-  .moodrow:last-child{border-bottom:0;}
-  .moodrow .mn{font-weight:700; font-size:14px; width:60px; flex:none;}
-  .moodrow .me{font-size:24px; width:32px; text-align:center;}
-  .moodrow .mnote{flex:1; font-size:13.5px; color:#7a6670;}
-  .moodrow .mnote.empty{color:#cdb3bf;}
-  .moodpick{display:flex; gap:6px; flex-wrap:wrap; margin-top:10px;}
-  .moodpick button{border:1.5px solid var(--line); background:#fff; border-radius:12px; width:42px; height:42px; font-size:22px; line-height:1; cursor:pointer; padding:0;}
-  .moodpick button:active{background:#fceef4; border-color:var(--pink);}
-  .moodnote-in{width:100%; border:1.5px solid var(--line); border-radius:999px; padding:10px 15px; font:inherit; font-size:15px; outline:0; margin-top:10px;}
-  .moodnote-in:focus{border-color:var(--pink);}
-  .moodhist{display:flex; gap:6px; margin-top:12px; overflow-x:auto; padding-bottom:2px;}
-  .mhcell{flex:none; text-align:center; min-width:32px;}
-  .mhcell .mhd{font-size:9.5px; color:#bba7b3;}
-  .mhcell .mhe{font-size:16px; line-height:1.45;}
-
   /* date review */
   .revview{font-size:12.5px; color:#9a7888; margin-top:2px;}
   .revbox{margin:2px 0 8px; padding:11px; background:#fbf4f8; border-radius:12px;}
@@ -165,11 +148,10 @@
   /* makeup */
   .mkmsg-in{width:100%; border:1.5px solid var(--line); border-radius:999px; padding:10px 15px; font:inherit; font-size:15px; outline:0; margin:6px 0 2px;}
   .mkmsg-in:focus{border-color:var(--pink);}
-  .mkbtns{display:flex; gap:8px; margin-top:10px;}
-  .mkbtn{flex:1; border:0; border-radius:14px; padding:14px; font:inherit; font-weight:800; font-size:15px; cursor:pointer;}
-  .mkbtn.sorry{background:#ffe3ee; color:#d6437a;}
-  .mkbtn.ok{background:#e3edff; color:#4a7bd0;}
-  .mkbtn:active{opacity:.82;}
+  .mkbtns{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px;}
+  .mkbtn{border:1.5px solid var(--line); background:#fff; border-radius:14px; padding:11px 6px; font:inherit; font-weight:700; font-size:13px; color:#8a6670; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px;}
+  .mkbtn .be{font-size:21px; line-height:1;}
+  .mkbtn:active{background:#fceef4; border-color:var(--pink);}
   .mklog{margin-top:12px;}
   .mkitem{display:flex; align-items:center; gap:8px; padding:9px 4px; border-bottom:1px solid #f6ecf2; font-size:13.5px;}
   .mkitem:last-child{border-bottom:0;}
@@ -181,6 +163,10 @@
   .anniv.pinned{background:linear-gradient(135deg,#fff0f6,#fde9f1); border-radius:13px; padding:11px 13px; border-bottom:0; margin-bottom:6px;}
   .anniv.pinned .al{color:var(--pink-deep); font-weight:800;}
   .anniv.pinned .ad{color:var(--pink-deep);}
+
+  /* fold */
+  .sec-title.fold-head{cursor:pointer;}
+  .fold{margin-left:auto; color:var(--muted); font-size:13px;}
 
   /* date photos */
   .phday{margin-bottom:15px;}
@@ -220,16 +206,6 @@
 
   <div class="marks" id="marks"></div>
 
-  <!-- 오늘의 기분 -->
-  <div class="card">
-    <div class="sec-title">🌈 오늘의 기분</div>
-    <div id="moodToday"></div>
-    <div class="who" id="moodWho"></div>
-    <input type="text" id="moodNote" class="moodnote-in" placeholder="한 줄 기분 메모 (선택)…">
-    <div class="moodpick" id="moodPick"></div>
-    <div class="moodhist" id="moodHist"></div>
-  </div>
-
   <!-- 기념일·생일 -->
   <div class="card">
     <div class="sec-title">🎂 기념일 · 생일 <button class="mini-add" id="annivAdd">+ 추가</button></div>
@@ -248,8 +224,8 @@
 
   <!-- 데이트 사진 -->
   <div class="card">
-    <div class="sec-title">📸 데이트 사진 기록</div>
-    <div id="photoList"></div>
+    <div class="sec-title fold-head" id="photoHead">📸 데이트 사진 기록 <span class="fold" id="photoFold">▸</span></div>
+    <div id="photoList" style="display:none"></div>
   </div>
 
   <!-- todo -->
@@ -272,15 +248,12 @@
     </div>
   </div>
 
-  <!-- 화해·사과 -->
+  <!-- 마음 전하기 -->
   <div class="card">
-    <div class="sec-title">💗 화해 · 사과</div>
+    <div class="sec-title">💗 마음 전하기</div>
     <div class="who" id="mkWho"></div>
     <input type="text" id="mkMsg" class="mkmsg-in" placeholder="한마디 덧붙이기 (선택)…">
-    <div class="mkbtns">
-      <button class="mkbtn sorry" id="mkSorry">🙏 미안해</button>
-      <button class="mkbtn ok" id="mkOk">🤝 화해했어</button>
-    </div>
+    <div class="mkbtns" id="mkBtns"></div>
     <div class="mklog" id="mkLog"></div>
   </div>
 
@@ -385,10 +358,18 @@ const HOLIDAYS = {
   "2027-12-25":"성탄절","2027-12-27":"대체공휴일",
 };
 let SET = {a:"지영", b:"정용", anniv:"2026-06-11"};
-let EVENTS=[], TODOS=[], MEMOS=[], ANNIVS=[], WISHES=[], PHOTOS=[], MAKEUPS=[], MOODS={};
-let evWho="a", memoWho="a", moodWho="a", mkWho="a";
+let EVENTS=[], TODOS=[], MEMOS=[], ANNIVS=[], WISHES=[], PHOTOS=[], MAKEUPS=[];
+let evWho="a", memoWho="a", mkWho="a", photoOpen=false;
 let uploadDate=null, lbId=null, lbImgSrc=null, lbDate=null;
-const MOOD_EMOJIS=["😊","🥰","😎","😌","😴","😪","😤","😢","🤒","🥳","🤩","🥺"];
+const EMOS=[
+  {k:"miss",  e:"🥺", l:"보고싶어"},
+  {k:"love",  e:"💕", l:"사랑해"},
+  {k:"thanks",e:"🙇", l:"고마워"},
+  {k:"sorry", e:"🙏", l:"미안해"},
+  {k:"ok",    e:"🤝", l:"화해했어"},
+  {k:"pat",   e:"🫶", l:"토닥토닥"},
+];
+const MK_FB={sorry:["🙏","미안해"], ok:["🤝","화해했어"]};
 const now=new Date();
 let viewY=now.getFullYear(), viewM=now.getMonth();
 let curDay=null;
@@ -664,57 +645,27 @@ function savePhoto(){
   document.body.appendChild(a); a.click(); a.remove();
 }
 
-/* ---- 오늘의 기분 ---- */
-function renderMoodWho(){ chips("moodWho", moodWho, w=>{moodWho=w; renderMoodWho();}); }
-function renderMoodPick(){
-  const box=document.getElementById("moodPick"); box.innerHTML="";
-  MOOD_EMOJIS.forEach(em=>{ const b=document.createElement("button"); b.textContent=em; b.onclick=()=>setMood(em); box.appendChild(b); });
-}
-function setMood(em){
-  if(!db){ alert("실시간 연결 후 기록할 수 있어요"); return; }
-  const today=ymd(new Date()); const note=document.getElementById("moodNote").value.trim();
-  db.ref(ROOT+"/moods/"+today+"/"+moodWho).set({emoji:em, note:note||null, t:Date.now()});
-  document.getElementById("moodNote").value="";
-}
-function renderMoodToday(){
-  const box=document.getElementById("moodToday"); box.innerHTML="";
-  const m=MOODS[ymd(new Date())]||{};
-  [["a",SET.a],["b",SET.b]].forEach(([k,nm])=>{
-    const cur=m[k]; const r=document.createElement("div"); r.className="moodrow";
-    r.innerHTML='<span class="mn" style="color:'+COL[k]+'">'+esc(nm)+'</span>'
-      +'<span class="me">'+(cur&&cur.emoji?cur.emoji:"·")+'</span>'
-      +'<span class="mnote'+(cur&&cur.note?"":" empty")+'">'+(cur&&cur.note?esc(cur.note):(cur&&cur.emoji?"":"아직 기분을 안 남겼어요"))+'</span>';
-    box.appendChild(r);
-  });
-}
-function renderMoodHist(){
-  const box=document.getElementById("moodHist"); box.innerHTML="";
-  for(let i=6;i>=0;i--){
-    const d=new Date(); d.setDate(d.getDate()-i); const m=MOODS[ymd(d)]||{};
-    const c=document.createElement("div"); c.className="mhcell";
-    c.innerHTML='<div class="mhd">'+(d.getMonth()+1)+"/"+d.getDate()+'</div><div class="mhe">'+((m.a&&m.a.emoji)||"·")+'</div><div class="mhe">'+((m.b&&m.b.emoji)||"·")+'</div>';
-    box.appendChild(c);
-  }
-}
-function renderMoods(){ renderMoodToday(); renderMoodHist(); }
-
-/* ---- 화해·사과 ---- */
+/* ---- 마음 전하기 ---- */
 function renderMkWho(){ chips("mkWho", mkWho, w=>{mkWho=w; renderMkWho();}); }
-function addMakeup(type){
+function renderMkBtns(){
+  const box=document.getElementById("mkBtns"); box.innerHTML="";
+  EMOS.forEach(em=>{ const b=document.createElement("button"); b.className="mkbtn"; b.innerHTML='<span class="be">'+em.e+'</span>'+em.l; b.onclick=()=>addMakeup(em); box.appendChild(b); });
+}
+function addMakeup(em){
   if(!db){ alert("실시간 연결 후 기록할 수 있어요"); return; }
   const msg=document.getElementById("mkMsg").value.trim();
-  db.ref(ROOT+"/makeups").push({who:mkWho, type:type, msg:msg||null, t:Date.now()});
+  db.ref(ROOT+"/makeups").push({who:mkWho, type:em.k, emoji:em.e, label:em.l, msg:msg||null, t:Date.now()});
   document.getElementById("mkMsg").value="";
 }
 function renderMakeups(){
   const box=document.getElementById("mkLog");
-  if(!MAKEUPS.length){ box.innerHTML='<div class="empty">다투면 여기서 먼저 손 내밀어요 💗</div>'; return; }
+  if(!MAKEUPS.length){ box.innerHTML='<div class="empty">마음이 들 때 버튼을 눌러 전해보세요 💗</div>'; return; }
   box.innerHTML=""; const nowt=Date.now();
   MAKEUPS.slice().sort((a,b)=>(b.t||0)-(a.t||0)).slice(0,30).forEach(m=>{
     const r=document.createElement("div"); r.className="mkitem"+((nowt-(m.t||0)<3600000)?" fresh":"");
     const d=new Date(m.t||0); const hm=pad(d.getHours())+":"+pad(d.getMinutes());
-    const em=m.type==="sorry"?"🙏":"🤝"; const label=m.type==="sorry"?"미안해":"화해했어";
-    r.innerHTML='<span class="mke">'+em+'</span><span><b style="color:'+(COL[m.who]||COL.a)+'">'+esc(whoName(m.who))+'</b> '+label+(m.msg?(" — "+esc(m.msg)):"")+'</span><span class="mkt">'+(d.getMonth()+1)+"/"+d.getDate()+" "+hm+'</span>';
+    const em=m.emoji||(MK_FB[m.type]?MK_FB[m.type][0]:"💗"); const label=m.label||(MK_FB[m.type]?MK_FB[m.type][1]:(m.type||""));
+    r.innerHTML='<span class="mke">'+em+'</span><span><b style="color:'+(COL[m.who]||COL.a)+'">'+esc(whoName(m.who))+'</b> '+esc(label)+(m.msg?(" — "+esc(m.msg)):"")+'</span><span class="mkt">'+(d.getMonth()+1)+"/"+d.getDate()+" "+hm+'</span>';
     box.appendChild(r);
   });
 }
@@ -754,7 +705,7 @@ function saveSet(){
   document.getElementById("setOv").classList.remove("open");
 }
 
-function refreshAll(){ renderDday(); renderAnnivs(); renderCal(); renderPhotos(); renderMoods(); renderMoodWho(); renderMoodPick(); renderMakeups(); renderMkWho(); renderTodos(); renderWishes(); renderMemos(); renderMemoWho();
+function refreshAll(){ renderDday(); renderAnnivs(); renderCal(); renderPhotos(); renderMakeups(); renderMkWho(); renderMkBtns(); renderTodos(); renderWishes(); renderMemos(); renderMemoWho();
   document.querySelector(".top h1").innerHTML='<span class="y">'+esc(SET.b)+'</span> ♥ <span class="h">'+esc(SET.a)+'</span>';
 }
 
@@ -781,8 +732,7 @@ document.getElementById("photoInput").addEventListener("change",e=>{
 document.getElementById("lbSave").onclick=savePhoto;
 document.getElementById("lbDel").onclick=()=>{ if(db&&lbId) db.ref(ROOT+"/photos/"+lbId).remove(); document.getElementById("lbOv").classList.remove("open"); };
 document.getElementById("lbOv").onclick=e=>{ if(e.target.id==="lbOv") document.getElementById("lbOv").classList.remove("open"); };
-document.getElementById("mkSorry").onclick=()=>addMakeup("sorry");
-document.getElementById("mkOk").onclick=()=>addMakeup("ok");
+document.getElementById("photoHead").onclick=()=>{ photoOpen=!photoOpen; document.getElementById("photoList").style.display=photoOpen?"":"none"; document.getElementById("photoFold").textContent=photoOpen?"▾":"▸"; };
 document.getElementById("gearBtn").onclick=openSet;
 document.getElementById("setClose").onclick=()=>document.getElementById("setOv").classList.remove("open");
 document.getElementById("setSave").onclick=saveSet;
@@ -799,7 +749,6 @@ function start(){
   db.ref(ROOT+"/settings").on("value",s=>{ const v=s.val(); if(v){ SET=Object.assign(SET,v); } else { db.ref(ROOT+"/settings").set(SET); } refreshAll(); });
   db.ref(ROOT+"/events").on("value",s=>{ const v=s.val()||{}; EVENTS=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderCal(); renderPhotos(); if(curDay&&document.getElementById("dayOv").classList.contains("open")) renderDayList(); });
   db.ref(ROOT+"/photos").on("value",s=>{ const v=s.val()||{}; PHOTOS=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderPhotos(); });
-  db.ref(ROOT+"/moods").on("value",s=>{ MOODS=s.val()||{}; renderMoods(); });
   db.ref(ROOT+"/makeups").on("value",s=>{ const v=s.val()||{}; MAKEUPS=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderMakeups(); });
   db.ref(ROOT+"/todos").on("value",s=>{ const v=s.val()||{}; TODOS=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderTodos(); });
   db.ref(ROOT+"/memos").on("value",s=>{ const v=s.val()||{}; MEMOS=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderMemos(); });
