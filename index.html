@@ -614,7 +614,7 @@ function renderTripFoods(){
   });
 }
 function addFood(){ const t=document.getElementById("foodText").value.trim(); if(!t) return;
-  if(db) db.ref(ROOT+"/trip/foods").push({text:t, by:foodWho, doneA:false, doneB:false, t:Date.now()});
+  if(db) db.ref(ROOT+"/trip/foods").push({text:t, by:foodWho, t:Date.now()});
   document.getElementById("foodText").value=""; }
 /* 준비물·이슈 등 칸별 섹션 (라벨+내용) 공통 렌더/편집 */
 function renderSecList(path, boxId, emptyMsg){
@@ -713,21 +713,14 @@ function renderFoods(){
   const box=document.getElementById("tripFoods"); if(!box) return; box.innerHTML="";
   const foods=TRIP.foods?Object.keys(TRIP.foods).map(k=>Object.assign({key:k},TRIP.foods[k])):[];
   if(!foods.length){ box.innerHTML='<div class="empty">가고 싶은 맛집을 적어보세요!</div>'; return; }
-  const lg=document.createElement("div"); lg.className="prep-legend";
-  lg.innerHTML='<span class="lg"><span class="sw" style="background:'+COL.b+'"></span>'+esc(SET.b)+'</span><span class="lg"><span class="sw" style="background:'+COL.a+'"></span>'+esc(SET.a)+'</span><span class="lgt">가봤으면 체크</span>';
-  box.appendChild(lg);
   foods.sort((a,b)=>(a.t||0)-(b.t||0)).forEach(f=>{
     const blk=document.createElement("div"); blk.className="trip-day";
     const top=document.createElement("div"); top.className="prep-item";
-    const cb=document.createElement("button"); cb.className="pchk b"+(f.doneB?" on":""); cb.textContent=f.doneB?"✓":""; cb.title=SET.b;
-    cb.onclick=()=>{ if(db) db.ref(ROOT+"/trip/foods/"+f.key+"/doneB").set(!f.doneB); };
-    const ca=document.createElement("button"); ca.className="pchk a"+(f.doneA?" on":""); ca.textContent=f.doneA?"✓":""; ca.title=SET.a;
-    ca.onclick=()=>{ if(db) db.ref(ROOT+"/trip/foods/"+f.key+"/doneA").set(!f.doneA); };
     const tx=document.createElement("div"); tx.className="tx tx-edit"; tx.textContent=f.text; tx.title="눌러서 수정";
     tx.onclick=()=>{ const nt=prompt("맛집 수정", f.text||""); if(nt===null||!db) return; const t=nt.trim(); if(!t) db.ref(ROOT+"/trip/foods/"+f.key).remove(); else db.ref(ROOT+"/trip/foods/"+f.key+"/text").set(t); };
-    const by=document.createElement("span"); by.className="food-by"; if(f.by) by.textContent=whoName(f.by)+" 적음";
+    const by=document.createElement("span"); by.className="food-by"; if(f.by) by.textContent=whoName(f.by)+" 등록";
     const x=document.createElement("button"); x.className="del"; x.textContent="✕"; x.onclick=()=>{ if(db) db.ref(ROOT+"/trip/foods/"+f.key).remove(); };
-    top.append(cb, ca, tx, by, x); blk.appendChild(top);
+    top.append(tx, by, x); blk.appendChild(top);
     blk.appendChild(attachComments(ROOT+"/trip/foods/"+f.key, f.comments));
     box.appendChild(blk);
   });
