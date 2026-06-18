@@ -187,6 +187,7 @@
   .subbtn.ghost2{border-color:var(--line); color:#9a7888;}
   .trip-foods-title{font-weight:800; font-size:14px; color:var(--pink-deep); margin:18px 0 8px;}
   .prep-irow{margin-top:8px;}
+  .tx-edit{cursor:pointer;}
   .prep-irow input{font-size:14px; padding:9px 13px;}
   .tripbtn{margin-left:0;}
   .cell.trip{background:#eef7ff;}
@@ -630,7 +631,10 @@ function renderPrep(){
       const r=document.createElement("div"); r.className="todo"+(it.done?" done":"");
       const c=document.createElement("div"); c.className="chk"; c.textContent=it.done?"✓":"";
       c.onclick=()=>{ if(db) db.ref(ROOT+"/trip/prep/"+cat.key+"/items/"+it.ikey+"/done").set(!it.done); };
-      const tx=document.createElement("div"); tx.className="tx"; tx.textContent=it.text;
+      const tx=document.createElement("div"); tx.className="tx tx-edit"; tx.textContent=it.text; tx.title="눌러서 수정";
+      tx.onclick=()=>{ const nt=prompt("준비물 수정", it.text||""); if(nt===null||!db) return; const t=nt.trim();
+        if(!t) db.ref(ROOT+"/trip/prep/"+cat.key+"/items/"+it.ikey).remove();
+        else db.ref(ROOT+"/trip/prep/"+cat.key+"/items/"+it.ikey+"/text").set(t); };
       const x=document.createElement("button"); x.className="del"; x.textContent="✕"; x.onclick=()=>{ if(db) db.ref(ROOT+"/trip/prep/"+cat.key+"/items/"+it.ikey).remove(); };
       r.append(c, tx, x); blk.appendChild(r);
     });
