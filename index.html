@@ -245,7 +245,13 @@
       <div class="trip-foods-title">🍽️ 가고싶은 맛집</div>
       <div id="tripFoods"></div>
       <div class="irow"><input type="text" id="foodText" placeholder="맛집·메뉴를 적어보세요…"><button class="add" id="foodAdd">추가</button></div>
-      <button class="mini-add tripbtn" id="tripInfoEdit" style="margin-top:12px">✏️ 여행 정보 수정</button>
+      <div class="trip-foods-title">🎒 준비물</div>
+      <div id="tripPrep"></div>
+      <button class="mini-add tripbtn" id="tripPrepAdd">+ 준비물 추가</button>
+      <div class="trip-foods-title">💡 이슈 · 메모</div>
+      <div id="tripIssues"></div>
+      <button class="mini-add tripbtn" id="tripIssueAdd">+ 이슈 추가</button>
+      <button class="mini-add tripbtn" id="tripInfoEdit" style="margin-top:14px">✏️ 여행 정보 수정</button>
     </div>
   </div>
 
@@ -417,7 +423,18 @@ const TRIP_SEED={
     d5:{order:5, label:"Day 5 · 7/31(금) 알로나 이동 & 마지막", body:"오전 BBC 체크아웃 → Henann Alona 이동(차 10~15분)\n낮 알로나비치 자유시간(마사지/수영/카페)\n오후 알로나 거리 쇼핑·기념품·짐정리\n저녁 알로나 맛집 디너 / 밤 11시경 체크아웃 → 공항"},
     d6:{order:6, label:"Day 6 · 8/1(토) 귀국", body:"01:30 보홀 출발 → 기내 취침\n06:55 부산(PUS) 도착, 여행 종료 🛬"}
   },
-  foods:{}
+  foods:{},
+  seeded2:true,
+  prep:{
+    p1:{order:1, label:"입국/서류", body:"한국 여권 무비자 30일 체류 (여권 유효기간 6개월 이상 확인)\neTravel 온라인 등록 (도착 72시간 내 권장)\n팡라오 환경세(Environmental Fee) 현장 납부"},
+    p2:{order:2, label:"돈/통신", body:"통화 PHP, 시내 환전소가 공항보다 유리\n카드보다 현금 위주 (투어·팁·로컬식당)\n유심/eSIM 미리 준비 또는 공항 구매\n팁 문화 있음 (가이드·마사지 등 소액)"},
+    p3:{order:3, label:"날씨/건강", body:"7~8월 우기 → 우산·우비·방수팩 (소나기 잦음)\n자외선 강함 → 선크림·래시가드·모자\n호핑/시골투어 멀미약 필수\n상비약(지사제·진통제·밴드)·모기기피제"},
+    p4:{order:4, label:"기타", body:"콘센트 110/220V 혼용 → 멀티 어댑터\n스노클링 장비 투어 포함 (마스크 지참도 OK)\n마지막날 새벽편 → 헤난 레이트 체크아웃/짐보관 협의"}
+  },
+  issues:{
+    i1:{order:1, label:"동선", body:"두 숙소 모두 팡라오 섬 → 시골투어는 다리 건너, 호핑은 팡라오 선착장 출발이라 동선 효율적"},
+    i2:{order:2, label:"체력 안배", body:"액티비티는 Day3(시골투어)·Day4(호핑)에 몰고, 앞뒤(Day2·5)는 휴양 — 새벽 도착/출발 체력 안배"}
+  }
 };
 function nl2br(s){ return esc(s).replace(/\n/g,"<br>"); }
 let uploadDate=null, lbId=null, lbImgSrc=null, lbDate=null;
@@ -506,6 +523,8 @@ function renderTrip(){
     (TRIP.range?'<div class="tm-range">'+esc(TRIP.range)+'</div>':"")+
     (TRIP.info?'<div class="tm-info">'+nl2br(TRIP.info)+'</div>':"");
   renderTripDays(); renderTripFoods();
+  renderSecList("prep","tripPrep","+ 준비물 칸을 추가해보세요");
+  renderSecList("issues","tripIssues","+ 이슈/메모 칸을 추가해보세요");
 }
 function renderTripDays(){
   const box=document.getElementById("tripDays"); box.innerHTML="";
@@ -548,6 +567,32 @@ function renderTripFoods(){
 function addFood(){ const t=document.getElementById("foodText").value.trim(); if(!t) return;
   if(db) db.ref(ROOT+"/trip/foods").push({text:t, done:false, t:Date.now()});
   document.getElementById("foodText").value=""; }
+/* 준비물·이슈 등 칸별 섹션 (라벨+내용) 공통 렌더/편집 */
+function renderSecList(path, boxId, emptyMsg){
+  const box=document.getElementById(boxId); if(!box) return; box.innerHTML="";
+  const data=TRIP[path];
+  const items=data?Object.keys(data).map(k=>Object.assign({key:k},data[k])).sort((a,b)=>(a.order||0)-(b.order||0)):[];
+  if(!items.length){ box.innerHTML='<div class="empty">'+emptyMsg+'</div>'; return; }
+  items.forEach(it=>{
+    const blk=document.createElement("div"); blk.className="trip-day";
+    blk.innerHTML='<div class="td-top"><div class="td-h">'+esc(it.label||"")+'</div></div>'+(it.body?'<div class="td-body">'+nl2br(it.body)+'</div>':"");
+    const top=blk.querySelector(".td-top");
+    const ed=document.createElement("button"); ed.className="td-x"; ed.textContent="✏️"; ed.onclick=()=>editSec(path, it, blk, boxId, emptyMsg);
+    const del=document.createElement("button"); del.className="td-x"; del.textContent="✕"; del.onclick=()=>{ if(confirm("이 칸을 지울까요?")&&db) db.ref(ROOT+"/trip/"+path+"/"+it.key).remove(); };
+    top.append(ed, del); box.appendChild(blk);
+  });
+}
+function editSec(path, it, blk, boxId, emptyMsg){
+  blk.innerHTML="";
+  const li=document.createElement("input"); li.type="text"; li.className="trip-edit-in"; li.value=it.label||""; li.placeholder="제목 (예: 입국/서류)";
+  const ta=document.createElement("textarea"); ta.className="trip-edit-ta"; ta.rows=5; ta.value=it.body||""; ta.placeholder="한 줄에 하나씩 적어요";
+  const row=document.createElement("div"); row.className="trip-edit-btns";
+  const sv=document.createElement("button"); sv.className="subbtn"; sv.textContent="저장"; sv.onclick=()=>{ if(db) db.ref(ROOT+"/trip/"+path+"/"+it.key).update({label:li.value.trim(), body:ta.value}); else { it.label=li.value.trim(); it.body=ta.value; renderSecList(path,boxId,emptyMsg); } };
+  const cl=document.createElement("button"); cl.className="subbtn ghost2"; cl.textContent="취소"; cl.onclick=()=>renderSecList(path,boxId,emptyMsg);
+  row.append(sv, cl); blk.append(li, ta, row);
+}
+function addSec(path){ const data=TRIP[path]?Object.values(TRIP[path]):[]; const maxO=data.reduce((m,d)=>Math.max(m,d.order||0),0);
+  if(db) db.ref(ROOT+"/trip/"+path).push({order:maxO+1, label:"새 칸", body:"", t:Date.now()}); }
 function editTripInfo(){
   const box=document.getElementById("tripMeta"); box.innerHTML="";
   const ti=document.createElement("input"); ti.type="text"; ti.className="trip-edit-in"; ti.value=TRIP.title||""; ti.placeholder="여행 제목";
@@ -863,6 +908,8 @@ document.getElementById("lbOv").onclick=e=>{ if(e.target.id==="lbOv") document.g
 document.getElementById("photoHead").onclick=()=>{ photoOpen=!photoOpen; document.getElementById("photoList").style.display=photoOpen?"":"none"; document.getElementById("photoFold").textContent=photoOpen?"▾":"▸"; };
 document.getElementById("tripHead").onclick=()=>{ tripOpen=!tripOpen; document.getElementById("tripBody").style.display=tripOpen?"":"none"; document.getElementById("tripFold").textContent=tripOpen?"▾":"▸"; };
 document.getElementById("tripDayAdd").onclick=addTripDay;
+document.getElementById("tripPrepAdd").onclick=()=>addSec("prep");
+document.getElementById("tripIssueAdd").onclick=()=>addSec("issues");
 document.getElementById("tripInfoEdit").onclick=editTripInfo;
 document.getElementById("foodAdd").onclick=addFood;
 document.getElementById("foodText").addEventListener("keydown",e=>{ if(e.key==="Enter") addFood(); });
@@ -887,7 +934,10 @@ function start(){
   db.ref(ROOT+"/memos").on("value",s=>{ const v=s.val()||{}; MEMOS=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderMemos(); });
   db.ref(ROOT+"/anniversaries").on("value",s=>{ const v=s.val()||{}; ANNIVS=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderAnnivs(); });
   db.ref(ROOT+"/wishes").on("value",s=>{ const v=s.val()||{}; WISHES=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderWishes(); });
-  db.ref(ROOT+"/trip").on("value",s=>{ const v=s.val(); if(!v){ db.ref(ROOT+"/trip").set(TRIP_SEED); return; } TRIP=v; renderTrip(); renderCal(); });
+  db.ref(ROOT+"/trip").on("value",s=>{ const v=s.val();
+    if(!v){ db.ref(ROOT+"/trip").set(TRIP_SEED); return; }
+    if(!v.seeded2){ db.ref(ROOT+"/trip").update({prep:v.prep||TRIP_SEED.prep, issues:v.issues||TRIP_SEED.issues, seeded2:true}); return; }
+    TRIP=v; renderTrip(); renderCal(); });
   setInterval(renderDday, 60000);
 }
 start();
