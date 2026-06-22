@@ -271,6 +271,15 @@
 
   .exp-row .ephoto{font-size:13px; flex:none; opacity:.85;}
   #rcptView img{max-width:100%; max-height:60vh; border-radius:12px;}
+
+  .rcpt-gal{display:grid; grid-template-columns:repeat(2,1fr); gap:8px;}
+  .rcpt-gal .gi{position:relative;}
+  .rcpt-gal .gi img{width:100%; border-radius:10px; display:block; border:1px solid var(--line);}
+  .rcpt-gal .gi .gx{position:absolute; top:5px; right:5px; background:rgba(0,0,0,.55); color:#fff; border:0; border-radius:50%; width:24px; height:24px; cursor:pointer; font-size:12px; line-height:1;}
+  .rcpt-empty{color:#c8b0bc; font-size:13px; padding:24px 0; text-align:center; line-height:1.6;}
+
+  .imgov{z-index:60; background:rgba(0,0,0,.85); cursor:zoom-out;}
+  .imgov img{max-width:96vw; max-height:92vh; border-radius:8px; box-shadow:0 10px 40px rgba(0,0,0,.5);}
 </style>
 </head>
 <body>
@@ -433,10 +442,10 @@
 <div class="ov" id="rcptOv"><div class="modal">
   <h3 id="rcptTitle" style="font-size:16px;font-weight:800;margin-bottom:10px"></h3>
   <div id="rcptView" style="text-align:center;margin-bottom:12px"></div>
-  <input type="file" id="rcptInput" accept="image/*" style="display:none">
+  <input type="file" id="rcptInput" accept="image/*" multiple style="display:none">
   <div class="mbtns"><button class="btn" id="rcptUp">📷 사진 올리기</button><button class="btn ghost" id="rcptClose">닫기</button></div>
-  <button id="rcptDel" style="background:none;border:0;color:#e8607f;font:inherit;font-size:12.5px;cursor:pointer;margin-top:10px;width:100%;display:none">🗑 사진 삭제</button>
 </div></div>
+<div class="ov imgov" id="imgOv"><img id="imgOvImg" alt="확대 이미지"></div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
@@ -616,7 +625,7 @@ function renderExpense(){
     const amtTxt = it.cur==="PHP" ? ("\u20B1"+(it.amt||0).toLocaleString()+" ("+fmtW(krw)+")") : fmtW(it.amt||0);
     row.innerHTML='<span class="ec">'+c.e+'</span><span class="en">'+esc(it.name||c.l)+'</span>'+
       (it.who?'<span class="ewho" style="background:'+(COL[it.who]||COL.both)+'">'+(it.who==="both"?"함께":esc(whoName(it.who)))+'</span>':"")+
-      '<span class="ea">'+amtTxt+'</span><span class="ephoto">'+(it.photo?"🧾":"📷")+'</span>';
+      '<span class="ea">'+amtTxt+'</span><span class="ephoto">'+(function(){var n=(it.photo?1:0)+(it.photos?Object.keys(it.photos).length:0); return n>0?("🧾"+(n>1?(" "+n):"")):"📷";})()+'</span>';
     const x=document.createElement("button"); x.className="ex"; x.textContent="\u2715";
     x.onclick=function(e){ e.stopPropagation(); if(db) db.ref(ROOT+"/trip/expenses/"+it.key).remove(); else { delete TRIP.expenses[it.key]; renderExpense(); } };
     row.style.cursor="pointer"; row.onclick=function(){ openRcpt(it.key, it); };
@@ -643,19 +652,33 @@ function renderExpense(){
     '<span style="color:'+COL.b+'">\uD83D\uDC99 '+esc(SET.b)+' '+fmtW(perWho.b||0)+'</span>'+
     '<span style="color:'+COL.both+'">\uD83E\uDD1D 함께 '+fmtW(perWho.both||0)+'</span>';
   box.appendChild(pw);
+  if(rcptKey && document.getElementById("rcptOv").classList.contains("open")) renderRcptGallery();
 }
 let rcptKey=null;
 function openRcpt(key, it){
   rcptKey=key;
   document.getElementById("rcptTitle").textContent=(it.name||"항목")+" 🧾 영수증·티켓";
-  const v=document.getElementById("rcptView");
-  if(it.photo){ v.innerHTML='<img src="'+it.photo+'">'; document.getElementById("rcptDel").style.display="block"; document.getElementById("rcptUp").textContent="📷 사진 변경"; }
-  else { v.innerHTML='<div style="color:#c8b0bc;font-size:13px;padding:26px 0">아직 영수증/티켓 사진이 없어요.<br>아래 버튼으로 올려보세요!</div>'; document.getElementById("rcptDel").style.display="none"; document.getElementById("rcptUp").textContent="📷 사진 올리기"; }
+  document.getElementById("rcptUp").textContent="📷 사진 추가";
+  renderRcptGallery();
   document.getElementById("rcptOv").classList.add("open");
 }
+function rcptPhotos(){ const it=(TRIP.expenses&&TRIP.expenses[rcptKey])||{}; const arr=[]; if(it.photo) arr.push({id:"__legacy", url:it.photo}); if(it.photos){ Object.keys(it.photos).forEach(function(k){ arr.push({id:k, url:it.photos[k]}); }); } return arr; }
+function renderRcptGallery(){ const v=document.getElementById("rcptView"); const arr=rcptPhotos();
+  if(!arr.length){ v.innerHTML='<div class="rcpt-empty">아직 영수증/티켓 사진이 없어요.<br>아래 버튼으로 올려보세요! (여러 장 가능)</div>'; return; }
+  v.innerHTML=""; const g=document.createElement("div"); g.className="rcpt-gal";
+  arr.forEach(function(ph){ const gi=document.createElement("div"); gi.className="gi"; const im=document.createElement("img"); im.src=ph.url; im.style.cursor="zoom-in"; im.onclick=function(){ showBig(ph.url); }; gi.appendChild(im);
+    const gx=document.createElement("button"); gx.className="gx"; gx.textContent="✕"; gx.onclick=function(){ delRcptPhoto(ph.id); }; gi.appendChild(gx); g.appendChild(gi); });
+  v.appendChild(g);
+}
+function delRcptPhoto(id){ if(!rcptKey) return;
+  if(id==="__legacy"){ if(db) db.ref(ROOT+"/trip/expenses/"+rcptKey+"/photo").remove(); else { if(TRIP.expenses[rcptKey]) delete TRIP.expenses[rcptKey].photo; } }
+  else { if(db) db.ref(ROOT+"/trip/expenses/"+rcptKey+"/photos/"+id).remove(); else { if(TRIP.expenses[rcptKey]&&TRIP.expenses[rcptKey].photos) delete TRIP.expenses[rcptKey].photos[id]; } }
+  if(!db){ renderExpense(); renderRcptGallery(); }
+}
 document.getElementById("rcptUp").onclick=function(){ document.getElementById("rcptInput").click(); };
-document.getElementById("rcptInput").onchange=function(e){ const f=e.target.files[0]; if(!f||!rcptKey) return; compressImage(f, function(url){ if(db) db.ref(ROOT+"/trip/expenses/"+rcptKey+"/photo").set(url); else { if(TRIP.expenses&&TRIP.expenses[rcptKey]) TRIP.expenses[rcptKey].photo=url; renderExpense(); } const vv=document.getElementById("rcptView"); vv.innerHTML='<img src="'+url+'">'; document.getElementById("rcptDel").style.display="block"; document.getElementById("rcptUp").textContent="📷 사진 변경"; }); e.target.value=""; };
-document.getElementById("rcptDel").onclick=function(){ if(rcptKey){ if(db) db.ref(ROOT+"/trip/expenses/"+rcptKey+"/photo").remove(); else { if(TRIP.expenses&&TRIP.expenses[rcptKey]) delete TRIP.expenses[rcptKey].photo; renderExpense(); } } document.getElementById("rcptOv").classList.remove("open"); };
+document.getElementById("rcptInput").onchange=function(e){ const fs=Array.prototype.slice.call(e.target.files); if(!fs.length||!rcptKey) return; fs.forEach(function(f){ compressImage(f, function(url){ if(db) db.ref(ROOT+"/trip/expenses/"+rcptKey+"/photos").push(url); else { if(TRIP.expenses[rcptKey]){ TRIP.expenses[rcptKey].photos=TRIP.expenses[rcptKey].photos||{}; TRIP.expenses[rcptKey].photos["p"+Date.now()+Math.floor(Math.random()*9999)]=url; renderExpense(); renderRcptGallery(); } } }); }); e.target.value=""; };
+function showBig(src){ document.getElementById("imgOvImg").src=src; document.getElementById("imgOv").classList.add("open"); }
+document.getElementById("imgOv").onclick=function(){ document.getElementById("imgOv").classList.remove("open"); };
 document.getElementById("rcptClose").onclick=function(){ document.getElementById("rcptOv").classList.remove("open"); };
 document.getElementById("rcptOv").onclick=function(e){ if(e.target.id==="rcptOv") document.getElementById("rcptOv").classList.remove("open"); };
 function renderTrip(){
