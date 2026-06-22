@@ -278,8 +278,10 @@
   .rcpt-gal .gi .gx{position:absolute; top:5px; right:5px; background:rgba(0,0,0,.55); color:#fff; border:0; border-radius:50%; width:24px; height:24px; cursor:pointer; font-size:12px; line-height:1;}
   .rcpt-empty{color:#c8b0bc; font-size:13px; padding:24px 0; text-align:center; line-height:1.6;}
 
-  .imgov{z-index:60; background:rgba(0,0,0,.85); cursor:zoom-out;}
-  .imgov img{max-width:96vw; max-height:92vh; border-radius:8px; box-shadow:0 10px 40px rgba(0,0,0,.5);}
+  .imgov{z-index:60; background:rgba(0,0,0,.92); overflow:hidden; touch-action:none;}
+  .imgov img{max-width:100vw; max-height:100vh; border-radius:4px; transform-origin:center center; will-change:transform; -webkit-user-select:none; user-select:none; -webkit-user-drag:none;}
+  .imgov .imgx{position:fixed; top:calc(env(safe-area-inset-top) + 12px); right:16px; z-index:62; background:rgba(0,0,0,.5); color:#fff; border:0; border-radius:50%; width:42px; height:42px; font-size:20px; line-height:1; cursor:pointer;}
+  .imgov .imghint{position:fixed; left:0; right:0; bottom:calc(env(safe-area-inset-bottom) + 14px); text-align:center; color:rgba(255,255,255,.72); font-size:12px; pointer-events:none; z-index:62;}
 </style>
 </head>
 <body>
@@ -445,7 +447,7 @@
   <input type="file" id="rcptInput" accept="image/*" multiple style="display:none">
   <div class="mbtns"><button class="btn" id="rcptUp">📷 사진 올리기</button><button class="btn ghost" id="rcptClose">닫기</button></div>
 </div></div>
-<div class="ov imgov" id="imgOv"><img id="imgOvImg" alt="확대 이미지"></div>
+<div class="ov imgov" id="imgOv"><button class="imgx" id="imgX">✕</button><img id="imgOvImg" alt="확대 이미지"><div class="imghint">두 손가락으로 확대 · 더블탭 확대/축소 · ✕ 닫기</div></div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
@@ -677,8 +679,38 @@ function delRcptPhoto(id){ if(!rcptKey) return;
 }
 document.getElementById("rcptUp").onclick=function(){ document.getElementById("rcptInput").click(); };
 document.getElementById("rcptInput").onchange=function(e){ const fs=Array.prototype.slice.call(e.target.files); if(!fs.length||!rcptKey) return; fs.forEach(function(f){ compressImage(f, function(url){ if(db) db.ref(ROOT+"/trip/expenses/"+rcptKey+"/photos").push(url); else { if(TRIP.expenses[rcptKey]){ TRIP.expenses[rcptKey].photos=TRIP.expenses[rcptKey].photos||{}; TRIP.expenses[rcptKey].photos["p"+Date.now()+Math.floor(Math.random()*9999)]=url; renderExpense(); renderRcptGallery(); } } }); }); e.target.value=""; };
-function showBig(src){ document.getElementById("imgOvImg").src=src; document.getElementById("imgOv").classList.add("open"); }
-document.getElementById("imgOv").onclick=function(){ document.getElementById("imgOv").classList.remove("open"); };
+(function(){
+  var ov=document.getElementById("imgOv"), img=document.getElementById("imgOvImg");
+  var scale=1, tx=0, ty=0, startDist=0, startScale=1, baseTx=0, baseTy=0;
+  var panning=false, panX=0, panY=0, moved=false, pinched=false, lastTap=0, tapTimer=null;
+  function apply(){ img.style.transform="translate("+tx+"px,"+ty+"px) scale("+scale+")"; }
+  function reset(){ scale=1; tx=0; ty=0; img.style.transition="none"; apply(); }
+  function closeOv(){ ov.classList.remove("open"); }
+  window.showBig=function(src){ img.src=src; reset(); ov.classList.add("open"); };
+  function d2(t){ var dx=t[0].clientX-t[1].clientX, dy=t[0].clientY-t[1].clientY; return Math.sqrt(dx*dx+dy*dy); }
+  img.addEventListener("touchstart", function(e){
+    img.style.transition="none"; moved=false;
+    if(e.touches.length===2){ pinched=true; startDist=d2(e.touches); startScale=scale; panning=false; }
+    else if(e.touches.length===1 && scale>1){ panning=true; panX=e.touches[0].clientX; panY=e.touches[0].clientY; baseTx=tx; baseTy=ty; }
+  }, {passive:false});
+  img.addEventListener("touchmove", function(e){
+    if(e.touches.length===2){ e.preventDefault(); moved=true; if(startDist>0){ scale=Math.max(1, Math.min(7, startScale*(d2(e.touches)/startDist))); apply(); } }
+    else if(e.touches.length===1 && panning){ e.preventDefault(); moved=true; tx=baseTx+(e.touches[0].clientX-panX); ty=baseTy+(e.touches[0].clientY-panY); apply(); }
+  }, {passive:false});
+  img.addEventListener("touchend", function(e){
+    if(e.touches.length>0) return;
+    panning=false;
+    if(scale<1.03){ scale=1; tx=0; ty=0; img.style.transition="transform .15s"; apply(); }
+    if(pinched){ pinched=false; return; }
+    if(moved) return;
+    var now=Date.now();
+    if(now-lastTap<300){ if(tapTimer){ clearTimeout(tapTimer); tapTimer=null; } lastTap=0; img.style.transition="transform .18s"; if(scale>1){ scale=1; tx=0; ty=0; } else { scale=2.6; } apply(); }
+    else { lastTap=now; tapTimer=setTimeout(function(){ tapTimer=null; if(scale<=1.01) closeOv(); }, 300); }
+  });
+  ov.addEventListener("wheel", function(e){ if(!ov.classList.contains("open")) return; e.preventDefault(); img.style.transition="none"; scale=Math.max(1, Math.min(7, scale*(e.deltaY<0?1.12:0.89))); if(scale<=1){ scale=1; tx=0; ty=0; } apply(); }, {passive:false});
+  ov.addEventListener("click", function(e){ if(e.target===ov) closeOv(); });
+  document.getElementById("imgX").onclick=closeOv;
+})();
 document.getElementById("rcptClose").onclick=function(){ document.getElementById("rcptOv").classList.remove("open"); };
 document.getElementById("rcptOv").onclick=function(e){ if(e.target.id==="rcptOv") document.getElementById("rcptOv").classList.remove("open"); };
 function renderTrip(){
