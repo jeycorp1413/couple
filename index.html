@@ -246,6 +246,25 @@
   .lbbtn{border:0; font:inherit; font-weight:700; padding:12px 24px; border-radius:999px; cursor:pointer;}
   .lbbtn.save{background:#fff; color:var(--pink-deep);}
   .lbbtn.del{background:rgba(255,255,255,.18); color:#fff;}
+
+  .exp-rate{display:flex; align-items:center; gap:6px; font-size:13px; color:#8a7480; margin-bottom:6px; flex-wrap:wrap;}
+  .exp-rate input{width:62px; border:1.5px solid var(--line); border-radius:8px; padding:5px 8px; font:inherit; font-size:15px; text-align:right; outline:0;}
+  .exp-row{display:flex; align-items:center; gap:7px; padding:8px 2px; border-bottom:1px solid var(--line); font-size:13.5px;}
+  .exp-row .ec{font-size:15px; flex:none;}
+  .exp-row .en{flex:1; color:#5a4a52; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .exp-row .ewho{font-size:10px; font-weight:800; color:#fff; border-radius:999px; padding:1px 7px; flex:none;}
+  .exp-row .ea{font-weight:800; color:#6a5a62; flex:none; font-size:13px;}
+  .exp-row .ex{border:0; background:none; cursor:pointer; color:#c8b0bc; font-size:12px; flex:none; padding:0 2px;}
+  .exp-empty{color:#c8b0bc; font-size:13px; padding:8px 0;}
+  .exp-add{display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-top:11px;}
+  .exp-add select,.exp-add input{border:1.5px solid var(--line); border-radius:9px; padding:9px 10px; font:inherit; font-size:15px; outline:0; background:#fff; width:100%;}
+  .exp-add .full{grid-column:1/-1;}
+  .exp-sum{margin-top:13px; background:linear-gradient(90deg,#fdeef4,#eef4ff); border-radius:14px; padding:13px 15px;}
+  .exp-sum .total{font-size:19px; font-weight:800; color:var(--pink-deep);}
+  .exp-sum .ssub{font-size:12.5px; color:#8a7480; margin-top:3px;}
+  .exp-cats{font-size:11.5px; color:#9a8490; margin-top:9px; line-height:1.9;}
+  .exp-budget{margin-top:10px; font-size:12.5px; color:#8a7480; display:flex; align-items:center; gap:7px; flex-wrap:wrap;}
+  .exp-budget input{width:120px; border:1.5px solid var(--line); border-radius:8px; padding:6px 9px; font:inherit; font-size:14px; text-align:right; outline:0;}
 </style>
 </head>
 <body>
@@ -282,6 +301,8 @@
       <div class="trip-foods-title">💡 이슈 · 메모</div>
       <div id="tripIssues"></div>
       <button class="mini-add tripbtn" id="tripIssueAdd">+ 이슈 추가</button>
+      <div class="trip-foods-title">💸 여행 경비 계산기</div>
+      <div id="tripExpense"></div>
       <button class="mini-add tripbtn" id="tripInfoEdit" style="margin-top:14px">✏️ 여행 정보 수정</button>
     </div>
   </div>
@@ -440,6 +461,7 @@ const HOLIDAYS = {
 let SET = {a:"지영", b:"정용", anniv:"2026-06-11"};
 let EVENTS=[], TODOS=[], MEMOS=[], ANNIVS=[], WISHES=[], PHOTOS=[], MAKEUPS=[];
 let evWho="a", memoWho="a", mkWho="a", photoOpen=false, tripOpen=false, issueWho="a", foodWho="a";
+let expCat="food", expCur="KRW", expWho="both";
 let TRIP={};
 const TRIP_SEED={
   title:"보홀 4박 6일 여행 💗",
@@ -562,6 +584,54 @@ function renderCal(){
 }
 
 /* ---- 여행 ---- */
+const CATS_E = {flight:{e:"\u2708\uFE0F",l:"항공"},hotel:{e:"\uD83C\uDFE8",l:"숙박"},tour:{e:"\uD83D\uDEA4",l:"투어"},food:{e:"\uD83C\uDF7D\uFE0F",l:"식비"},shop:{e:"\uD83D\uDED2",l:"쇼핑"},etc:{e:"\uD83D\uDCB5",l:"기타"}};
+function fmtW(n){ return "\u20A9"+Math.round(n).toLocaleString("ko-KR"); }
+function fmtP(n){ return "\u20B1"+Math.round(n).toLocaleString("en-US"); }
+function toKRW(amt,cur,rate){ return cur==="PHP" ? amt*rate : amt; }
+function renderExpense(){
+  const box=document.getElementById("tripExpense"); if(!box) return;
+  const rate = TRIP.exrate || 24;
+  const items = TRIP.expenses ? Object.keys(TRIP.expenses).map(function(k){return Object.assign({key:k}, TRIP.expenses[k]);}).sort(function(a,b){return (a.t||0)-(b.t||0);}) : [];
+  box.innerHTML="";
+  const rr=document.createElement("div"); rr.className="exp-rate"; rr.appendChild(document.createTextNode("\uD83D\uDCB1 1페소 = "));
+  const ri=document.createElement("input"); ri.type="number"; ri.step="0.1"; ri.value=rate;
+  ri.onchange=function(){ const v=parseFloat(ri.value)||24; if(db) db.ref(ROOT+"/trip/exrate").set(v); else { TRIP.exrate=v; renderExpense(); } };
+  rr.appendChild(ri); rr.appendChild(document.createTextNode(" 원")); box.appendChild(rr);
+  let totalKRW=0; const catSum={};
+  items.forEach(function(it){
+    const c=CATS_E[it.cat]||CATS_E.etc; const krw=toKRW(it.amt||0, it.cur, rate); totalKRW+=krw; catSum[it.cat]=(catSum[it.cat]||0)+krw;
+    const row=document.createElement("div"); row.className="exp-row";
+    const amtTxt = it.cur==="PHP" ? ("\u20B1"+(it.amt||0).toLocaleString()+" ("+fmtW(krw)+")") : fmtW(it.amt||0);
+    row.innerHTML='<span class="ec">'+c.e+'</span><span class="en">'+esc(it.name||c.l)+'</span>'+
+      (it.who?'<span class="ewho" style="background:'+(COL[it.who]||COL.both)+'">'+(it.who==="both"?"함께":esc(whoName(it.who)))+'</span>':"")+
+      '<span class="ea">'+amtTxt+'</span>';
+    const x=document.createElement("button"); x.className="ex"; x.textContent="\u2715";
+    x.onclick=function(){ if(db) db.ref(ROOT+"/trip/expenses/"+it.key).remove(); else { delete TRIP.expenses[it.key]; renderExpense(); } };
+    row.appendChild(x); box.appendChild(row);
+  });
+  if(!items.length){ const e=document.createElement("div"); e.className="exp-empty"; e.textContent="아직 등록된 경비가 없어요. 아래에서 추가해보세요!"; box.appendChild(e); }
+  const af=document.createElement("div"); af.className="exp-add";
+  const csel=document.createElement("select"); for(const k in CATS_E){ const o=document.createElement("option"); o.value=k; o.textContent=CATS_E[k].e+" "+CATS_E[k].l; csel.appendChild(o);} csel.value=expCat; csel.onchange=function(){expCat=csel.value;};
+  const cur=document.createElement("select"); [["KRW","원"],["PHP","페소"]].forEach(function(a){const o=document.createElement("option");o.value=a[0];o.textContent=a[1];cur.appendChild(o);}); cur.value=expCur; cur.onchange=function(){expCur=cur.value;};
+  const nin=document.createElement("input"); nin.type="text"; nin.placeholder="항목명 (예: 호핑투어)"; nin.className="full";
+  const ain=document.createElement("input"); ain.type="number"; ain.inputMode="numeric"; ain.placeholder="금액";
+  const wsel=document.createElement("select"); [["both","함께"],["a",SET.a],["b",SET.b]].forEach(function(a){const o=document.createElement("option");o.value=a[0];o.textContent=a[1];wsel.appendChild(o);}); wsel.value=expWho; wsel.onchange=function(){expWho=wsel.value;};
+  const add=document.createElement("button"); add.className="subbtn full"; add.textContent="+ 추가";
+  add.onclick=function(){ const amt=parseFloat(ain.value); if(!amt){ ain.focus(); return; } const obj={cat:csel.value, name:nin.value.trim()||CATS_E[csel.value].l, cur:cur.value, amt:amt, who:wsel.value, t:Date.now()};
+    if(db) db.ref(ROOT+"/trip/expenses").push(obj); else { TRIP.expenses=TRIP.expenses||{}; TRIP.expenses["e"+Date.now()]=obj; renderExpense(); } nin.value=""; ain.value=""; };
+  af.appendChild(csel); af.appendChild(cur); af.appendChild(nin); af.appendChild(ain); af.appendChild(wsel); af.appendChild(add);
+  box.appendChild(af);
+  const sm=document.createElement("div"); sm.className="exp-sum";
+  let html='<div class="total">총 '+fmtW(totalKRW)+'</div><div class="ssub">\u2248 '+fmtP(totalKRW/rate)+'  \u00B7  1인당 '+fmtW(totalKRW/2)+'</div>';
+  const cks=Object.keys(catSum); if(cks.length){ html+='<div class="exp-cats">'; cks.forEach(function(k){ const c=CATS_E[k]||CATS_E.etc; html+=c.e+" "+c.l+" "+fmtW(catSum[k])+"\u00A0\u00A0\u00A0"; }); html+='</div>'; }
+  sm.innerHTML=html; box.appendChild(sm);
+  const bd=document.createElement("div"); bd.className="exp-budget"; bd.appendChild(document.createTextNode("\uD83C\uDFAF 예산 "));
+  const bin=document.createElement("input"); bin.type="number"; bin.placeholder="목표(원)"; if(TRIP.budget) bin.value=TRIP.budget;
+  bin.onchange=function(){ const v=parseFloat(bin.value)||0; if(db) db.ref(ROOT+"/trip/budget").set(v||null); else { TRIP.budget=v||null; renderExpense(); } };
+  bd.appendChild(bin); bd.appendChild(document.createTextNode(" 원"));
+  if(TRIP.budget){ const rem=TRIP.budget-totalKRW; const sp=document.createElement("span"); sp.style.fontWeight="800"; sp.style.color=rem>=0?"#2a9d6b":"#e8607f"; sp.textContent=rem>=0?("남은 "+fmtW(rem)):("초과 "+fmtW(-rem)); bd.appendChild(sp); }
+  box.appendChild(bd);
+}
 function renderTrip(){
   document.getElementById("tripTitle").textContent=TRIP.title||"여행";
   const dd=document.getElementById("tripDday");
@@ -574,6 +644,7 @@ function renderTrip(){
   renderTripDays(); renderFoods(); renderFoodWho();
   renderPrep();
   renderIssues();
+  renderExpense();
 }
 function renderTripDays(){
   const box=document.getElementById("tripDays"); box.innerHTML="";
