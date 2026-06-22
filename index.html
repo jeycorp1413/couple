@@ -265,6 +265,12 @@
   .exp-cats{font-size:11.5px; color:#9a8490; margin-top:9px; line-height:1.9;}
   .exp-budget{margin-top:10px; font-size:12.5px; color:#8a7480; display:flex; align-items:center; gap:7px; flex-wrap:wrap;}
   .exp-budget input{width:120px; border:1.5px solid var(--line); border-radius:8px; padding:6px 9px; font:inherit; font-size:14px; text-align:right; outline:0;}
+
+  .exp-who{margin-top:11px; display:flex; gap:9px; flex-wrap:wrap; font-size:13px; font-weight:800;}
+  .exp-who span{background:#fff; border:1px solid var(--line); border-radius:999px; padding:6px 12px;}
+
+  .exp-row .ephoto{font-size:13px; flex:none; opacity:.85;}
+  #rcptView img{max-width:100%; max-height:60vh; border-radius:12px;}
 </style>
 </head>
 <body>
@@ -303,7 +309,6 @@
       <button class="mini-add tripbtn" id="tripIssueAdd">+ 이슈 추가</button>
       <div class="trip-foods-title">💸 여행 경비 계산기</div>
       <div id="tripExpense"></div>
-      <button class="mini-add tripbtn" id="tripInfoEdit" style="margin-top:14px">✏️ 여행 정보 수정</button>
     </div>
   </div>
 
@@ -425,6 +430,13 @@
 </div>
 
 <!-- Firebase -->
+<div class="ov" id="rcptOv"><div class="modal">
+  <h3 id="rcptTitle" style="font-size:16px;font-weight:800;margin-bottom:10px"></h3>
+  <div id="rcptView" style="text-align:center;margin-bottom:12px"></div>
+  <input type="file" id="rcptInput" accept="image/*" style="display:none">
+  <div class="mbtns"><button class="btn" id="rcptUp">📷 사진 올리기</button><button class="btn ghost" id="rcptClose">닫기</button></div>
+  <button id="rcptDel" style="background:none;border:0;color:#e8607f;font:inherit;font-size:12.5px;cursor:pointer;margin-top:10px;width:100%;display:none">🗑 사진 삭제</button>
+</div></div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
@@ -597,16 +609,17 @@ function renderExpense(){
   const ri=document.createElement("input"); ri.type="number"; ri.step="0.1"; ri.value=rate;
   ri.onchange=function(){ const v=parseFloat(ri.value)||24; if(db) db.ref(ROOT+"/trip/exrate").set(v); else { TRIP.exrate=v; renderExpense(); } };
   rr.appendChild(ri); rr.appendChild(document.createTextNode(" 원")); box.appendChild(rr);
-  let totalKRW=0; const catSum={};
+  let totalKRW=0; const catSum={}, perWho={};
   items.forEach(function(it){
-    const c=CATS_E[it.cat]||CATS_E.etc; const krw=toKRW(it.amt||0, it.cur, rate); totalKRW+=krw; catSum[it.cat]=(catSum[it.cat]||0)+krw;
+    const c=CATS_E[it.cat]||CATS_E.etc; const krw=toKRW(it.amt||0, it.cur, rate); totalKRW+=krw; catSum[it.cat]=(catSum[it.cat]||0)+krw; perWho[it.who||'both']=(perWho[it.who||'both']||0)+krw;
     const row=document.createElement("div"); row.className="exp-row";
     const amtTxt = it.cur==="PHP" ? ("\u20B1"+(it.amt||0).toLocaleString()+" ("+fmtW(krw)+")") : fmtW(it.amt||0);
     row.innerHTML='<span class="ec">'+c.e+'</span><span class="en">'+esc(it.name||c.l)+'</span>'+
       (it.who?'<span class="ewho" style="background:'+(COL[it.who]||COL.both)+'">'+(it.who==="both"?"함께":esc(whoName(it.who)))+'</span>':"")+
-      '<span class="ea">'+amtTxt+'</span>';
+      '<span class="ea">'+amtTxt+'</span><span class="ephoto">'+(it.photo?"🧾":"📷")+'</span>';
     const x=document.createElement("button"); x.className="ex"; x.textContent="\u2715";
-    x.onclick=function(){ if(db) db.ref(ROOT+"/trip/expenses/"+it.key).remove(); else { delete TRIP.expenses[it.key]; renderExpense(); } };
+    x.onclick=function(e){ e.stopPropagation(); if(db) db.ref(ROOT+"/trip/expenses/"+it.key).remove(); else { delete TRIP.expenses[it.key]; renderExpense(); } };
+    row.style.cursor="pointer"; row.onclick=function(){ openRcpt(it.key, it); };
     row.appendChild(x); box.appendChild(row);
   });
   if(!items.length){ const e=document.createElement("div"); e.className="exp-empty"; e.textContent="아직 등록된 경비가 없어요. 아래에서 추가해보세요!"; box.appendChild(e); }
@@ -622,16 +635,29 @@ function renderExpense(){
   af.appendChild(csel); af.appendChild(cur); af.appendChild(nin); af.appendChild(ain); af.appendChild(wsel); af.appendChild(add);
   box.appendChild(af);
   const sm=document.createElement("div"); sm.className="exp-sum";
-  let html='<div class="total">총 '+fmtW(totalKRW)+'</div><div class="ssub">\u2248 '+fmtP(totalKRW/rate)+'  \u00B7  1인당 '+fmtW(totalKRW/2)+'</div>';
+  let html='<div class="total">총 '+fmtW(totalKRW)+'</div><div class="ssub">1인당 '+fmtW(totalKRW/2)+'</div>';
   const cks=Object.keys(catSum); if(cks.length){ html+='<div class="exp-cats">'; cks.forEach(function(k){ const c=CATS_E[k]||CATS_E.etc; html+=c.e+" "+c.l+" "+fmtW(catSum[k])+"\u00A0\u00A0\u00A0"; }); html+='</div>'; }
   sm.innerHTML=html; box.appendChild(sm);
-  const bd=document.createElement("div"); bd.className="exp-budget"; bd.appendChild(document.createTextNode("\uD83C\uDFAF 예산 "));
-  const bin=document.createElement("input"); bin.type="number"; bin.placeholder="목표(원)"; if(TRIP.budget) bin.value=TRIP.budget;
-  bin.onchange=function(){ const v=parseFloat(bin.value)||0; if(db) db.ref(ROOT+"/trip/budget").set(v||null); else { TRIP.budget=v||null; renderExpense(); } };
-  bd.appendChild(bin); bd.appendChild(document.createTextNode(" 원"));
-  if(TRIP.budget){ const rem=TRIP.budget-totalKRW; const sp=document.createElement("span"); sp.style.fontWeight="800"; sp.style.color=rem>=0?"#2a9d6b":"#e8607f"; sp.textContent=rem>=0?("남은 "+fmtW(rem)):("초과 "+fmtW(-rem)); bd.appendChild(sp); }
-  box.appendChild(bd);
+  const pw=document.createElement("div"); pw.className="exp-who";
+  pw.innerHTML='<span style="color:'+COL.a+'">\uD83D\uDC97 '+esc(SET.a)+' '+fmtW(perWho.a||0)+'</span>'+
+    '<span style="color:'+COL.b+'">\uD83D\uDC99 '+esc(SET.b)+' '+fmtW(perWho.b||0)+'</span>'+
+    '<span style="color:'+COL.both+'">\uD83E\uDD1D 함께 '+fmtW(perWho.both||0)+'</span>';
+  box.appendChild(pw);
 }
+let rcptKey=null;
+function openRcpt(key, it){
+  rcptKey=key;
+  document.getElementById("rcptTitle").textContent=(it.name||"항목")+" 🧾 영수증·티켓";
+  const v=document.getElementById("rcptView");
+  if(it.photo){ v.innerHTML='<img src="'+it.photo+'">'; document.getElementById("rcptDel").style.display="block"; document.getElementById("rcptUp").textContent="📷 사진 변경"; }
+  else { v.innerHTML='<div style="color:#c8b0bc;font-size:13px;padding:26px 0">아직 영수증/티켓 사진이 없어요.<br>아래 버튼으로 올려보세요!</div>'; document.getElementById("rcptDel").style.display="none"; document.getElementById("rcptUp").textContent="📷 사진 올리기"; }
+  document.getElementById("rcptOv").classList.add("open");
+}
+document.getElementById("rcptUp").onclick=function(){ document.getElementById("rcptInput").click(); };
+document.getElementById("rcptInput").onchange=function(e){ const f=e.target.files[0]; if(!f||!rcptKey) return; compressImage(f, function(url){ if(db) db.ref(ROOT+"/trip/expenses/"+rcptKey+"/photo").set(url); else { if(TRIP.expenses&&TRIP.expenses[rcptKey]) TRIP.expenses[rcptKey].photo=url; renderExpense(); } const vv=document.getElementById("rcptView"); vv.innerHTML='<img src="'+url+'">'; document.getElementById("rcptDel").style.display="block"; document.getElementById("rcptUp").textContent="📷 사진 변경"; }); e.target.value=""; };
+document.getElementById("rcptDel").onclick=function(){ if(rcptKey){ if(db) db.ref(ROOT+"/trip/expenses/"+rcptKey+"/photo").remove(); else { if(TRIP.expenses&&TRIP.expenses[rcptKey]) delete TRIP.expenses[rcptKey].photo; renderExpense(); } } document.getElementById("rcptOv").classList.remove("open"); };
+document.getElementById("rcptClose").onclick=function(){ document.getElementById("rcptOv").classList.remove("open"); };
+document.getElementById("rcptOv").onclick=function(e){ if(e.target.id==="rcptOv") document.getElementById("rcptOv").classList.remove("open"); };
 function renderTrip(){
   document.getElementById("tripTitle").textContent=TRIP.title||"여행";
   const dd=document.getElementById("tripDday");
@@ -1129,7 +1155,6 @@ document.getElementById("tripHead").onclick=()=>{ tripOpen=!tripOpen; document.g
 document.getElementById("tripDayAdd").onclick=addTripDay;
 document.getElementById("tripPrepAdd").onclick=addPrepCat;
 document.getElementById("tripIssueAdd").onclick=()=>addSec("issues");
-document.getElementById("tripInfoEdit").onclick=editTripInfo;
 document.getElementById("foodAdd").onclick=addFood;
 document.getElementById("foodText").addEventListener("keydown",e=>{ if(e.key==="Enter") addFood(); });
 document.getElementById("gearBtn").onclick=openSet;
