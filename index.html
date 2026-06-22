@@ -282,6 +282,27 @@
   .imgov img{max-width:100vw; max-height:100vh; border-radius:4px; transform-origin:center center; will-change:transform; -webkit-user-select:none; user-select:none; -webkit-user-drag:none;}
   .imgov .imgx{position:fixed; top:calc(env(safe-area-inset-top) + 12px); right:16px; z-index:62; background:rgba(0,0,0,.5); color:#fff; border:0; border-radius:50%; width:42px; height:42px; font-size:20px; line-height:1; cursor:pointer;}
   .imgov .imghint{position:fixed; left:0; right:0; bottom:calc(env(safe-area-inset-bottom) + 14px); text-align:center; color:rgba(255,255,255,.72); font-size:12px; pointer-events:none; z-index:62;}
+
+  .wx-row{display:flex; gap:6px; overflow-x:auto; padding:4px 0 2px; -webkit-overflow-scrolling:touch;}
+  .wx-d{flex:0 0 auto; min-width:54px; text-align:center; background:#f7f0f5; border-radius:10px; padding:7px 4px;}
+  .wx-dn{font-size:11px; color:#8a7a83; line-height:1.25;}
+  .wx-dn.we{color:#e8607f;}
+  .wx-ic{font-size:20px; margin:3px 0;}
+  .wx-t{font-size:11px; color:#555;} .wx-t b{color:#e26d92;}
+  .wx-r{font-size:10px; color:#5b8fd6;}
+  .wx-note{font-size:10.5px; color:#c8b0bc; margin-top:4px;}
+  .wx-load{font-size:12px; color:#c8b0bc; padding:8px 0;}
+  .prep-prog{margin:2px 0 10px;}
+  .prep-prog .pp-top{display:flex; justify-content:space-between; font-size:12px; color:#7a6b73; margin-bottom:4px;}
+  .prep-prog .pp-n{font-weight:700; color:#e26d92;}
+  .prep-prog .pp-bar{height:9px; background:#f0e3eb; border-radius:6px; overflow:hidden;}
+  .prep-prog .pp-fill{height:100%; background:linear-gradient(90deg,#f3a6c4,#e26d92); border-radius:6px; transition:width .3s;}
+  .rate-sync{margin-left:8px; background:#fff; border:1px solid #e9c7d6; color:#e26d92; border-radius:8px; padding:3px 8px; font-size:11.5px; cursor:pointer;}
+  .rate-note{font-size:11px; color:#9a8a93; margin:4px 0 2px;}
+
+  .trip-foods-title.fold-head{display:flex; align-items:center; cursor:pointer; -webkit-user-select:none; user-select:none;}
+  .trip-foods-title.fold-head .fold{font-size:13px;}
+  .td-fold{font-size:12px;}
 </style>
 </head>
 <body>
@@ -307,19 +328,35 @@
     <div class="sec-title fold-head" id="tripHead">🌴 <span id="tripTitle">여행</span> <span class="trip-right"><span class="trip-dday" id="tripDday"></span><span class="fold" id="tripFold">▸</span></span></div>
     <div id="tripBody" style="display:none">
       <div class="trip-meta" id="tripMeta"></div>
+      <div class="trip-foods-title">🌤️ 보홀(팡라오) 날씨</div>
+      <div id="tripWeather"></div>
       <div id="tripDays"></div>
       <button class="mini-add tripbtn" id="tripDayAdd">+ 일정 추가</button>
-      <div class="trip-foods-title">💸 여행 경비 계산기</div>
-      <div id="tripExpense"></div>
-      <div class="trip-foods-title">🎒 준비물</div>
-      <div id="tripPrep"></div>
-      <button class="mini-add tripbtn" id="tripPrepAdd">+ 준비물 추가</button>
-      <div class="trip-foods-title">💡 이슈 · 메모</div>
-      <div id="tripIssues"></div>
-      <button class="mini-add tripbtn" id="tripIssueAdd">+ 이슈 추가</button>
-      <div class="trip-foods-title">🍽️ 가고싶은 맛집</div>
-      <div id="tripFoods"></div>
-      <div class="cmt-input food-add"><div class="cmt-who-sel" id="foodWhoSel"></div><input type="text" id="foodText" placeholder="맛집·메뉴를 적어보세요…"><button class="cmt-add" id="foodAdd">추가</button></div>
+      <div class="trip-sec">
+        <div class="trip-foods-title fold-head" data-fold="exp">💸 여행 경비 계산기 <span class="fold">▾</span></div>
+        <div class="sec-body"><div id="tripExpense"></div></div>
+      </div>
+      <div class="trip-sec">
+        <div class="trip-foods-title fold-head" data-fold="prep">🎒 준비물 <span class="fold">▾</span></div>
+        <div class="sec-body">
+          <div id="tripPrep"></div>
+          <button class="mini-add tripbtn" id="tripPrepAdd">+ 준비물 추가</button>
+        </div>
+      </div>
+      <div class="trip-sec">
+        <div class="trip-foods-title fold-head" data-fold="issue">💡 이슈 · 메모 <span class="fold">▾</span></div>
+        <div class="sec-body">
+          <div id="tripIssues"></div>
+          <button class="mini-add tripbtn" id="tripIssueAdd">+ 이슈 추가</button>
+        </div>
+      </div>
+      <div class="trip-sec">
+        <div class="trip-foods-title fold-head" data-fold="food">🍽️ 가고싶은 맛집 <span class="fold">▾</span></div>
+        <div class="sec-body">
+          <div id="tripFoods"></div>
+          <div class="cmt-input food-add"><div class="cmt-who-sel" id="foodWhoSel"></div><input type="text" id="foodText" placeholder="맛집·메뉴를 적어보세요…"><button class="cmt-add" id="foodAdd">추가</button></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -611,6 +648,16 @@ const CATS_E = {flight:{e:"\u2708\uFE0F",l:"항공"},hotel:{e:"\uD83C\uDFE8",l:"
 function fmtW(n){ return "\u20A9"+Math.round(n).toLocaleString("ko-KR"); }
 function fmtP(n){ return "\u20B1"+Math.round(n).toLocaleString("en-US"); }
 function toKRW(amt,cur,rate){ return cur==="PHP" ? amt*rate : amt; }
+let rateAuto=false, rateFetching=false;
+function fetchRate(apply){
+  if(rateFetching) return; rateFetching=true;
+  const n=document.getElementById("rateNote"); if(n) n.textContent="환율 불러오는 중…";
+  fetch("https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/php.json")
+   .then(function(r){return r.json();}).then(function(j){ rateFetching=false; const v=j&&j.php&&j.php.krw; if(!v){ throw 0; } const rv=Math.round(v*100)/100; const today=j.date||"";
+     if(db){ db.ref(ROOT+"/trip/exrateLive").set({v:rv,d:today}); if(apply) db.ref(ROOT+"/trip/exrate").set(rv); }
+     else { TRIP.exrateLive={v:rv,d:today}; if(apply) TRIP.exrate=rv; renderExpense(); }
+   }).catch(function(){ rateFetching=false; const n2=document.getElementById("rateNote"); if(n2) n2.textContent="환율을 불러오지 못했어요 (수동 입력하세요)"; });
+}
 function renderExpense(){
   const box=document.getElementById("tripExpense"); if(!box) return;
   const rate = TRIP.exrate || 24;
@@ -619,7 +666,12 @@ function renderExpense(){
   const rr=document.createElement("div"); rr.className="exp-rate"; rr.appendChild(document.createTextNode("\uD83D\uDCB1 1페소 = "));
   const ri=document.createElement("input"); ri.type="number"; ri.step="0.1"; ri.value=rate;
   ri.onchange=function(){ const v=parseFloat(ri.value)||24; if(db) db.ref(ROOT+"/trip/exrate").set(v); else { TRIP.exrate=v; renderExpense(); } };
-  rr.appendChild(ri); rr.appendChild(document.createTextNode(" 원")); box.appendChild(rr);
+  rr.appendChild(ri); rr.appendChild(document.createTextNode(" 원"));
+  const rsync=document.createElement("button"); rsync.className="rate-sync"; rsync.textContent="🔄 실시간"; rsync.onclick=function(){ fetchRate(true); }; rr.appendChild(rsync);
+  box.appendChild(rr);
+  const rnote=document.createElement("div"); rnote.className="rate-note"; rnote.id="rateNote";
+  if(TRIP.exrateLive&&TRIP.exrateLive.v){ rnote.textContent="실시간 1페소 "+TRIP.exrateLive.v+"원 ("+(TRIP.exrateLive.d||"")+")"; }
+  box.appendChild(rnote);
   let totalKRW=0; const catSum={}, perWho={};
   items.forEach(function(it){
     const c=CATS_E[it.cat]||CATS_E.etc; const krw=toKRW(it.amt||0, it.cur, rate); totalKRW+=krw; catSum[it.cat]=(catSum[it.cat]||0)+krw; perWho[it.who||'both']=(perWho[it.who||'both']||0)+krw;
@@ -655,6 +707,7 @@ function renderExpense(){
     '<span style="color:'+COL.both+'">\uD83E\uDD1D 함께 '+fmtW(perWho.both||0)+'</span>';
   box.appendChild(pw);
   if(rcptKey && document.getElementById("rcptOv").classList.contains("open")) renderRcptGallery();
+  if(!rateAuto){ rateAuto=true; fetchRate((TRIP.exrate||24)===24); }
 }
 let rcptKey=null;
 function openRcpt(key, it){
@@ -713,6 +766,29 @@ document.getElementById("rcptInput").onchange=function(e){ const fs=Array.protot
 })();
 document.getElementById("rcptClose").onclick=function(){ document.getElementById("rcptOv").classList.remove("open"); };
 document.getElementById("rcptOv").onclick=function(e){ if(e.target.id==="rcptOv") document.getElementById("rcptOv").classList.remove("open"); };
+function wicon(c){ if(c===0)return"☀️"; if(c===1)return"🌤️"; if(c===2)return"⛅"; if(c===3)return"☁️"; if(c<=48)return"🌫️"; if(c<=57)return"🌦️"; if(c<=67)return"🌧️"; if(c<=77)return"🌨️"; if(c<=82)return"🌧️"; if(c<=86)return"🌨️"; return"⛈️"; }
+let WX=null;
+function renderWeather(){
+  const box=document.getElementById("tripWeather"); if(!box) return;
+  if(WX){ paintWeather(box, WX); return; }
+  box.innerHTML='<div class="wx-load">날씨 불러오는 중…</div>';
+  fetch("https://api.open-meteo.com/v1/forecast?latitude=9.5783&longitude=123.7486&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia%2FManila&forecast_days=7")
+   .then(function(r){return r.json();}).then(function(j){ WX=j.daily; paintWeather(box, WX); })
+   .catch(function(){ box.innerHTML='<div class="wx-load">날씨를 불러오지 못했어요</div>'; });
+}
+function paintWeather(box, d){
+  if(!d||!d.time){ box.innerHTML=""; return; }
+  const DW=["일","월","화","수","목","금","토"];
+  let h='<div class="wx-row">';
+  d.time.forEach(function(ds,i){ const dt=new Date(ds+"T00:00:00"); const isW=(dt.getDay()===0||dt.getDay()===6);
+    h+='<div class="wx-d"><div class="wx-dn'+(isW?" we":"")+'">'+(dt.getMonth()+1)+"/"+dt.getDate()+'<br>'+DW[dt.getDay()]+'</div>'+
+       '<div class="wx-ic">'+wicon(d.weather_code[i])+'</div>'+
+       '<div class="wx-t"><b>'+Math.round(d.temperature_2m_max[i])+'\u00B0</b> '+Math.round(d.temperature_2m_min[i])+'\u00B0</div>'+
+       '<div class="wx-r">💧'+(d.precipitation_probability_max[i]||0)+'%</div></div>';
+  });
+  h+='</div><div class="wx-note">팡라오섬 기준 · 7일 예보</div>';
+  box.innerHTML=h;
+}
 function renderTrip(){
   document.getElementById("tripTitle").textContent=TRIP.title||"여행";
   const dd=document.getElementById("tripDday");
@@ -722,6 +798,7 @@ function renderTrip(){
   document.getElementById("tripMeta").innerHTML =
     (TRIP.range?'<div class="tm-range">'+esc(TRIP.range)+'</div>':"")+
     (TRIP.info?'<div class="tm-info">'+nl2br(TRIP.info)+'</div>':"");
+  renderWeather();
   renderTripDays(); renderFoods(); renderFoodWho();
   renderPrep();
   renderIssues();
@@ -737,7 +814,12 @@ function renderTripDays(){
     const top=blk.querySelector(".td-top");
     const ed=document.createElement("button"); ed.className="td-x"; ed.textContent="✏️"; ed.onclick=()=>editTripDay(dy, blk);
     const del=document.createElement("button"); del.className="td-x"; del.textContent="✕"; del.onclick=()=>{ if(confirm("이 일정을 지울까요?")&&db) db.ref(ROOT+"/trip/days/"+dy.key).remove(); };
-    top.append(ed, del); box.appendChild(blk);
+    const fb=document.createElement("button"); fb.className="td-x td-fold"; fb.textContent="▾";
+    fb.onclick=()=>{ const b=blk.querySelector(".td-body"); if(!b) return; const open=b.style.display!=="none"; b.style.display=open?"none":""; fb.textContent=open?"▸":"▾"; try{ localStorage.setItem("fold_day_"+dy.key, open?"1":"0"); }catch(e){} };
+    top.append(fb, ed, del);
+    const _sb=blk.querySelector(".td-body");
+    if(_sb){ try{ if(localStorage.getItem("fold_day_"+dy.key)==="1"){ _sb.style.display="none"; fb.textContent="▸"; } }catch(e){} } else { fb.style.display="none"; }
+    box.appendChild(blk);
   });
 }
 function editTripDay(dy, blk){
@@ -802,6 +884,11 @@ function renderPrep(){
   const lg=document.createElement("div"); lg.className="prep-legend";
   lg.innerHTML='<span class="lg"><span class="sw" style="background:'+COL.b+'"></span>'+esc(SET.b)+'</span><span class="lg"><span class="sw" style="background:'+COL.a+'"></span>'+esc(SET.a)+'</span><span class="lgt">각자 체크해요</span>';
   box.appendChild(lg);
+  let totI=0, doneI=0;
+  cats.forEach(function(c){ const its=c.items?Object.values(c.items):[]; its.forEach(function(it){ totI++; if(it.doneA&&it.doneB) doneI++; }); });
+  if(totI>0){ const pct=Math.round(doneI/totI*100); const pb=document.createElement("div"); pb.className="prep-prog";
+    pb.innerHTML='<div class="pp-top"><span>🎒 준비물 체크</span><span class="pp-n">'+doneI+' / '+totI+' 완료</span></div><div class="pp-bar"><div class="pp-fill" style="width:'+pct+'%"></div></div>';
+    box.appendChild(pb); }
   cats.forEach(cat=>{
     const blk=document.createElement("div"); blk.className="trip-day";
     const top=document.createElement("div"); top.className="td-top";
@@ -1206,6 +1293,11 @@ document.getElementById("lbSave").onclick=savePhoto;
 document.getElementById("lbDel").onclick=()=>{ if(db&&lbId) db.ref(ROOT+"/photos/"+lbId).remove(); document.getElementById("lbOv").classList.remove("open"); };
 document.getElementById("lbOv").onclick=e=>{ if(e.target.id==="lbOv") document.getElementById("lbOv").classList.remove("open"); };
 document.getElementById("photoHead").onclick=()=>{ photoOpen=!photoOpen; document.getElementById("photoList").style.display=photoOpen?"":"none"; document.getElementById("photoFold").textContent=photoOpen?"▾":"▸"; };
+document.querySelectorAll(".trip-sec > .fold-head").forEach(function(h){
+  var body=h.nextElementSibling, ar=h.querySelector(".fold"), key="fold_"+(h.dataset.fold||"");
+  h.onclick=function(){ var open=body.style.display!=="none"; body.style.display=open?"none":""; ar.textContent=open?"▸":"▾"; try{ localStorage.setItem(key, open?"1":"0"); }catch(e){} };
+  try{ if(localStorage.getItem(key)==="1"){ body.style.display="none"; ar.textContent="▸"; } }catch(e){}
+});
 document.getElementById("tripHead").onclick=()=>{ tripOpen=!tripOpen; document.getElementById("tripBody").style.display=tripOpen?"":"none"; document.getElementById("tripFold").textContent=tripOpen?"▾":"▸"; };
 document.getElementById("tripDayAdd").onclick=addTripDay;
 document.getElementById("tripPrepAdd").onclick=addPrepCat;
