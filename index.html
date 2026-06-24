@@ -223,7 +223,7 @@
   .cell.trip{background:#eef7ff;}
   .trip-dot{font-size:9px; line-height:1.1;}
 
-  /* scroll reveal — Apple style · 양방향 + 요소 stagger */
+  /* scroll reveal — Apple style · 순방향 1회 + 요소 stagger */
   html{scroll-behavior:smooth;}
   .ritem{opacity:0; transform:translateY(44px) scale(.94); filter:blur(9px); will-change:opacity,transform,filter;
     transition:opacity .7s cubic-bezier(.16,1,.3,1), transform .8s cubic-bezier(.16,1,.3,1), filter .7s ease;}
@@ -1342,7 +1342,7 @@ function start(){
 }
 start();
 
-/* ---- 스크롤 등장 애니메이션 (Apple 스타일 · 양방향 + 요소 stagger) ---- */
+/* ---- 스크롤 등장 애니메이션 (Apple 스타일 · 순방향 1회 + 요소 stagger) ---- */
 (function(){
   const conts=[...document.querySelectorAll(".hero,.marks,.card")];
   const reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -1351,9 +1351,9 @@ start();
     cont.classList.add("reveal");
     [...cont.children].forEach((ch,i)=>{ ch.classList.add("ritem"); ch.style.transitionDelay=(i*0.07)+"s"; }); /* 항목마다 조금씩 늦게 → cascade */
   });
-  /* 화면에 들어오면 재생, 나가면 리셋 → 아래로/위로(역주행) 모두 다시 등장 */
+  /* 화면에 들어오면 한 번 등장 후 유지 (순방향만, 역주행 재생 없음) */
   const io=new IntersectionObserver((ents)=>{ ents.forEach(e=>{
-    if(e.isIntersecting) e.target.classList.add("in"); else e.target.classList.remove("in");
+    if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); }
   }); }, {threshold:0.12, rootMargin:"0px 0px -8% 0px"});
   conts.forEach(c=>io.observe(c));
 })();
