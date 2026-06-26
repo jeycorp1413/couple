@@ -1244,9 +1244,16 @@ function renderMemos(){
   MEMOS.slice().sort((a,b)=>(b.t||0)-(a.t||0)).forEach(m=>{
     const r=document.createElement("div"); r.className="memo";
     const d=new Date(m.t||0); const hm=pad(d.getHours())+":"+pad(d.getMinutes());
-    r.innerHTML='<div class="mw" style="color:'+(COL[m.who]||COL.a)+'">'+esc(whoName(m.who))+'</div>'
-      +'<div class="mtx">'+esc(m.text)+'</div>'
-      +'<div class="mt">'+(d.getMonth()+1)+"월 "+d.getDate()+"일 "+hm+'</div>';
+    const mw=document.createElement("div"); mw.className="mw"; mw.style.color=COL[m.who]||COL.a;
+    mw.style.cursor="pointer"; mw.title="눌러서 작성자 변경";
+    mw.textContent=whoName(m.who);
+    mw.onclick=()=>{ if(!db||!m.id) return;
+      const order=["a","b","both"]; const next=order[(order.indexOf(m.who)+1)%order.length];
+      db.ref(ROOT+"/memos/"+m.id+"/who").set(next);
+    };
+    const tx=document.createElement("div"); tx.className="mtx"; tx.textContent=m.text;
+    const tt=document.createElement("div"); tt.className="mt"; tt.textContent=(d.getMonth()+1)+"월 "+d.getDate()+"일 "+hm;
+    r.appendChild(mw); r.appendChild(tx); r.appendChild(tt);
     box.appendChild(r);
   });
 }
