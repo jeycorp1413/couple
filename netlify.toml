@@ -1,0 +1,12 @@
+# Netlify 설정. 프로젝트 루트에 두세요.
+# (이미 netlify.toml이 있으면 [functions] 부분만 합치면 됩니다)
+
+[build]
+  publish = "."                 # 정적 파일이 들어있는 폴더 (현재 구조에 맞게 수정)
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# 예약(cron)은 함수 파일 안의 `export const config = { schedule: ... }` 로 지정됩니다.
+# netlify.toml에서 별도로 적을 필요 없어요.
