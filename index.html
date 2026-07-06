@@ -733,7 +733,7 @@ function delRcptPhoto(id){ if(!rcptKey) return;
   if(!db){ renderExpense(); renderRcptGallery(); }
 }
 document.getElementById("rcptUp").onclick=function(){ document.getElementById("rcptInput").click(); };
-document.getElementById("rcptInput").onchange=function(e){ const fs=Array.prototype.slice.call(e.target.files); if(!fs.length||!rcptKey) return; fs.forEach(function(f){ compressImage(f, function(url){ if(db) db.ref(ROOT+"/trip/expenses/"+rcptKey+"/photos").push(url); else { if(TRIP.expenses[rcptKey]){ TRIP.expenses[rcptKey].photos=TRIP.expenses[rcptKey].photos||{}; TRIP.expenses[rcptKey].photos["p"+Date.now()+Math.floor(Math.random()*9999)]=url; renderExpense(); renderRcptGallery(); } } }); }); e.target.value=""; };
+document.getElementById("rcptInput").onchange=function(e){ const fs=Array.prototype.slice.call(e.target.files); if(!fs.length||!rcptKey) return; fs.forEach(function(f){ compressImage(f, function(url){ if(db) db.ref(ROOT+"/trip/expenses/"+rcptKey+"/photos").push(url); else { if(TRIP.expenses[rcptKey]){ TRIP.expenses[rcptKey].photos=TRIP.expenses[rcptKey].photos||{}; TRIP.expenses[rcptKey].photos["p"+Date.now()+Math.floor(Math.random()*9999)]=url; renderExpense(); renderRcptGallery(); } } }, {max:2000,q:0.9}); }); e.target.value=""; };
 (function(){
   var ov=document.getElementById("imgOv"), img=document.getElementById("imgOvImg");
   var scale=1, tx=0, ty=0, startDist=0, startScale=1, baseTx=0, baseTy=0;
@@ -1185,14 +1185,24 @@ function renderPhotos(){
     row.appendChild(add); day.appendChild(row); box.appendChild(day);
   });
 }
-function compressImage(file, cb){
+function compressImage(file, cb, opt){
+  const MAX=(opt&&opt.max)||1600, Q=(opt&&opt.q)||0.85;
   const reader=new FileReader();
   reader.onload=e=>{ const img=new Image();
-    img.onload=()=>{ const max=1000; let w=img.width, h=img.height;
-      if(w>h && w>max){ h=Math.round(h*max/w); w=max; } else if(h>=w && h>max){ w=Math.round(w*max/h); h=max; }
-      const cv=document.createElement("canvas"); cv.width=w; cv.height=h;
-      cv.getContext("2d").drawImage(img,0,0,w,h);
-      cb(cv.toDataURL("image/jpeg",0.72));
+    img.onload=()=>{ let w=img.width, h=img.height, tw=w, th=h;
+      if(tw>th && tw>MAX){ th=Math.round(th*MAX/tw); tw=MAX; } else if(th>=tw && th>MAX){ tw=Math.round(tw*MAX/th); th=MAX; }
+      /* 큰 사진은 절반씩 단계 축소 — 한 번에 줄일 때 생기는 계단·물결 현상 방지 */
+      let cur=img, cw=w, ch=h;
+      while(cw/2>tw){
+        const c=document.createElement("canvas"); c.width=Math.round(cw/2); c.height=Math.round(ch/2);
+        const cx=c.getContext("2d"); cx.imageSmoothingEnabled=true; cx.imageSmoothingQuality="high";
+        cx.drawImage(cur,0,0,c.width,c.height);
+        cur=c; cw=c.width; ch=c.height;
+      }
+      const cv=document.createElement("canvas"); cv.width=tw; cv.height=th;
+      const ctx=cv.getContext("2d"); ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality="high";
+      ctx.drawImage(cur,0,0,tw,th);
+      cb(cv.toDataURL("image/jpeg",Q));
     };
     img.src=e.target.result;
   };
