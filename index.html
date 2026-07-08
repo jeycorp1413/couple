@@ -40,13 +40,6 @@
   .hero .big{font-size:54px; font-weight:900; letter-spacing:-1.5px; margin:4px 0 4px; line-height:1.05; background:linear-gradient(90deg,var(--pink-deep),var(--blue-deep)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;}
   .hero .sub{font-size:12.5px; color:#a892a0;}
 
-  /* milestone chips — 3칸 그리드로 D-day 박스와 폭 정렬 */
-  .marks{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:18px;}
-  .mark{background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:11px 6px; text-align:center;}
-  .mark .mt{font-size:12px; color:var(--muted);}
-  .mark .md{font-size:17px; font-weight:800; color:var(--pink-deep); margin:3px 0;}
-  .mark .ms{font-size:10.5px; color:#b6a3ae;}
-
   .card{background:var(--card); border-radius:22px; padding:19px; margin-bottom:20px; box-shadow:0 8px 28px rgba(150,120,140,.10);}
   .sec-title{font-weight:800; font-size:17px; margin:0 0 13px; letter-spacing:-.2px; display:flex; align-items:center; gap:7px;}
   .mini-add{margin-left:auto; border:1.5px solid var(--pink); background:#fff; color:var(--pink-deep); font:inherit; font-size:12.5px; font-weight:700; border-radius:999px; padding:5px 12px; cursor:pointer;}
@@ -169,6 +162,7 @@
   .sec-title.fold-head{cursor:pointer; margin-bottom:0;}
   #tripBody{margin-top:15px;}
   #photoList{margin-top:14px;}
+  .fold-body{margin-top:13px;}
   .fold{margin-left:auto; color:var(--muted); font-size:20px; line-height:1;}
 
   /* trip */
@@ -323,8 +317,6 @@
     <div class="sub" id="heroSub"></div>
   </div>
 
-  <div class="marks" id="marks"></div>
-
   <!-- 여행 -->
   <div class="card">
     <div class="sec-title fold-head" id="tripHead">🌴 <span id="tripTitle">여행</span> <span class="trip-right"><span class="trip-dday" id="tripDday"></span><span class="fold" id="tripFold">▸</span></span></div>
@@ -386,41 +378,49 @@
 
   <!-- todo -->
   <div class="card">
-    <div class="sec-title">✅ 함께 할 일</div>
-    <div id="todoList"></div>
-    <div class="irow">
-      <input type="text" id="todoText" placeholder="같이 할 일을 적어보세요…">
-      <button class="add" id="todoAdd">추가</button>
+    <div class="sec-title fold-head" id="todoHead">✅ 함께 할 일 <span class="fold" id="todoFold">▸</span></div>
+    <div id="todoBody" class="fold-body" style="display:none">
+      <div id="todoList"></div>
+      <div class="irow">
+        <input type="text" id="todoText" placeholder="같이 할 일을 적어보세요…">
+        <button class="add" id="todoAdd">추가</button>
+      </div>
     </div>
   </div>
 
   <!-- 위시리스트 -->
   <div class="card">
-    <div class="sec-title">🌟 가고싶은 곳 · 하고싶은 것</div>
-    <div id="wishList"></div>
-    <div class="irow">
-      <input type="text" id="wishText" placeholder="가보고 싶은 곳, 하고 싶은 것…">
-      <button class="add" id="wishAdd">추가</button>
+    <div class="sec-title fold-head" id="wishHead">🌟 가고싶은 곳 · 하고싶은 것 <span class="fold" id="wishFold">▸</span></div>
+    <div id="wishBody" class="fold-body" style="display:none">
+      <div id="wishList"></div>
+      <div class="irow">
+        <input type="text" id="wishText" placeholder="가보고 싶은 곳, 하고 싶은 것…">
+        <button class="add" id="wishAdd">추가</button>
+      </div>
     </div>
   </div>
 
   <!-- 마음 전하기 -->
   <div class="card">
-    <div class="sec-title">💗 마음 전하기</div>
-    <div class="who" id="mkWho"></div>
-    <input type="text" id="mkMsg" class="mkmsg-in" placeholder="한마디 덧붙이기 (선택)…">
-    <div class="mkbtns" id="mkBtns"></div>
-    <div class="mklog" id="mkLog"></div>
+    <div class="sec-title fold-head" id="mkHead">💗 마음 전하기 <span class="fold" id="mkFold">▸</span></div>
+    <div id="mkBody" class="fold-body" style="display:none">
+      <div class="who" id="mkWho"></div>
+      <input type="text" id="mkMsg" class="mkmsg-in" placeholder="한마디 덧붙이기 (선택)…">
+      <div class="mkbtns" id="mkBtns"></div>
+      <div class="mklog" id="mkLog"></div>
+    </div>
   </div>
 
   <!-- memo -->
   <div class="card">
-    <div class="sec-title" id="memoTitle">💌 우리의 한마디</div>
-    <div id="memoList"></div>
-    <div class="who" id="memoWho"></div>
-    <div class="irow">
-      <input type="text" id="memoText" placeholder="서로에게 한마디 남겨요…">
-      <button class="add" id="memoAdd">남기기</button>
+    <div class="sec-title fold-head" id="memoHead"><span id="memoTitle">💌 우리의 한마디</span> <span class="fold" id="memoFold">▸</span></div>
+    <div id="memoBody" class="fold-body" style="display:none">
+      <div id="memoList"></div>
+      <div class="who" id="memoWho"></div>
+      <div class="irow">
+        <input type="text" id="memoText" placeholder="서로에게 한마디 남겨요…">
+        <button class="add" id="memoAdd">남기기</button>
+      </div>
     </div>
   </div>
 </div>
@@ -602,16 +602,17 @@ function renderDday(){
   document.getElementById("heroLbl").textContent = SET.a+" ♥ "+SET.b+" 함께한 지";
   document.getElementById("heroSub").textContent = "시작일 "+SET.anniv;
 
-  /* milestones: 일수 기준 + 주년 기준, 다가오는 것 위주 */
+  renderAnnivs(); /* 마일스톤은 기념일·생일 카드에서 함께 표시 */
+}
+
+/* 다가오는 마일스톤(일수+주년) 가까운 순 n개 */
+function upcomingMarks(n){
+  const anv=midnight(parseD(SET.anniv)), today=midnight(new Date());
   const marks=[];
-  [100,200,300,500,1000,2000,3000].forEach(n=>{ const dt=new Date(anv.getTime()+(n-1)*DAY); marks.push({label:n+"일", date:dt}); });
+  [100,200,300,500,1000,2000,3000].forEach(k=>{ const dt=new Date(anv.getTime()+(k-1)*DAY); marks.push({label:k+"일", date:dt}); });
   for(let y=1;y<=20;y++){ const dt=new Date(anv.getFullYear()+y,anv.getMonth(),anv.getDate()); marks.push({label:y+"주년", date:dt}); }
-  const up=marks.map(m=>({...m, left:Math.round((midnight(m.date)-today)/DAY)}))
-               .filter(m=>m.left>=0).sort((a,b)=>a.left-b.left).slice(0,6);
-  const box=document.getElementById("marks"); box.innerHTML="";
-  up.forEach(m=>{ const el=document.createElement("div"); el.className="mark";
-    el.innerHTML='<div class="mt">'+m.label+'</div><div class="md">'+(m.left===0?"오늘🎉":"D-"+m.left)+'</div><div class="ms">'+ymd(m.date).slice(5).replace("-",".")+'</div>';
-    box.appendChild(el); });
+  return marks.map(m=>({...m, left:Math.round((midnight(m.date)-today)/DAY)}))
+              .filter(m=>m.left>=0).sort((a,b)=>a.left-b.left).slice(0,n);
 }
 
 /* ---- calendar ---- */
@@ -1120,15 +1121,24 @@ function renderAnnivs(){
   const pdd=nx.left===0?"오늘🎉":"D-"+nx.left;
   pin.innerHTML='<span class="al">사랑한지 💗 <small>'+(base.getMonth()+1)+"."+base.getDate()+' · 매년</small></span><span class="ad">'+pdd+'</span>';
   box.appendChild(pin);
-  if(!ANNIVS.length){ const em=document.createElement("div"); em.className="empty"; em.textContent="+ 추가를 눌러 생일·기념일을 더 등록해보세요"; box.appendChild(em); return; }
-  const arr=ANNIVS.map(a=>Object.assign({},a,annivNext(a))).filter(a=>a.yearly||a.left>=0).sort((x,y)=>x.left-y.left);
-  arr.forEach(a=>{ const r=document.createElement("div"); r.className="anniv";
+  /* 마일스톤(가까운 4개) + 등록 기념일 → 디데이 빠른 순 */
+  const marks=upcomingMarks(4).map(m=>({label:m.label+" 💗", next:m.date, left:m.left, milestone:true}));
+  const arr=ANNIVS.map(a=>Object.assign({},a,annivNext(a))).filter(a=>a.yearly||a.left>=0);
+  const all=marks.concat(arr).sort((x,y)=>x.left-y.left);
+  all.forEach(a=>{ const r=document.createElement("div"); r.className="anniv";
     const dd=a.left===0?"오늘🎉":"D-"+a.left;
     r.innerHTML='<span class="al">'+esc(a.label)+' <small>'+ymd(a.next).slice(5).replace("-",".")+(a.yearly?" · 매년":"")+'</small></span><span class="ad">'+dd+'</span>';
-    const x=document.createElement("button"); x.className="ax"; x.textContent="✕";
-    x.onclick=()=>{ if(db&&a.id) db.ref(ROOT+"/anniversaries/"+a.id).remove(); };
-    r.appendChild(x); box.appendChild(r);
+    /* 삭제는 행 길게 누르기(0.6초) — ✕ 버튼 없이 열 정렬 유지 */
+    if(!a.milestone){
+      let ht=null;
+      const arm=()=>{ ht=setTimeout(()=>{ if(confirm('"'+a.label+'" 기념일을 삭제할까요?') && db && a.id) db.ref(ROOT+"/anniversaries/"+a.id).remove(); }, 600); };
+      const off=()=>clearTimeout(ht);
+      r.addEventListener("touchstart",arm,{passive:true}); r.addEventListener("mousedown",arm);
+      ["touchend","touchmove","mouseup","mouseleave"].forEach(ev=>r.addEventListener(ev,off));
+    }
+    box.appendChild(r);
   });
+  if(!ANNIVS.length){ const em=document.createElement("div"); em.className="empty"; em.textContent="+ 추가를 눌러 생일·기념일을 더 등록해보세요"; box.appendChild(em); }
 }
 function openAnniv(){ document.getElementById("annivLabel").value=""; document.getElementById("annivDate").value=""; document.getElementById("annivYearly").checked=true; document.getElementById("annivOv").classList.add("open"); }
 function saveAnniv(){
@@ -1319,6 +1329,11 @@ document.querySelectorAll(".trip-sec > .fold-head").forEach(function(h){
   try{ if(localStorage.getItem(key)==="1"){ body.style.display="none"; ar.textContent="▸"; } }catch(e){}
 });
 document.getElementById("tripHead").onclick=()=>{ tripOpen=!tripOpen; document.getElementById("tripBody").style.display=tripOpen?"":"none"; document.getElementById("tripFold").textContent=tripOpen?"▾":"▸"; };
+/* 할일·위시·마음전하기·한마디 접기/펼치기 */
+[["todoHead","todoBody","todoFold"],["wishHead","wishBody","wishFold"],["mkHead","mkBody","mkFold"],["memoHead","memoBody","memoFold"]].forEach(([h,b,f])=>{
+  let open=false;
+  document.getElementById(h).onclick=()=>{ open=!open; document.getElementById(b).style.display=open?"":"none"; document.getElementById(f).textContent=open?"▾":"▸"; };
+});
 document.getElementById("tripDayAdd").onclick=addTripDay;
 document.getElementById("tripPrepAdd").onclick=addPrepCat;
 document.getElementById("tripIssueAdd").onclick=()=>addSec("issues");
@@ -1361,7 +1376,7 @@ start();
 
 /* ---- 스크롤 등장 애니메이션 (Apple 스타일 · 순방향 1회 + 요소 stagger) ---- */
 (function(){
-  const conts=[...document.querySelectorAll(".hero,.marks,.card")];
+  const conts=[...document.querySelectorAll(".hero,.card")];
   const reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
   if(!("IntersectionObserver" in window)||reduce){ conts.forEach(c=>c.classList.add("in")); return; }
   conts.forEach(cont=>{
