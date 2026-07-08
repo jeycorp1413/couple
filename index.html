@@ -31,14 +31,26 @@
   .top h1{margin:0; font-size:21px; font-weight:800; letter-spacing:-.3px;}
   .top h1 .h{color:var(--pink-deep);} .top h1 .y{color:var(--blue-deep);}
   .gear{border:1.5px solid var(--line); background:#fff; border-radius:50%; width:40px; height:40px; cursor:pointer; font-size:17px; flex:none;}
-  .live{font-size:11.5px; color:var(--muted); margin-bottom:14px;}
-  .live.on{color:#4caf86;}
+  .live{display:none;}
 
-  /* dday hero */
-  .hero{background:linear-gradient(135deg,#ffe3ee 0%,#e3edff 100%); border-radius:26px; padding:30px 22px; text-align:center; margin-bottom:18px; box-shadow:0 10px 34px rgba(226,109,146,.16);}
-  .hero .lbl{font-size:13.5px; color:#9a7e8c; font-weight:600; letter-spacing:.2px;}
-  .hero .big{font-size:54px; font-weight:900; letter-spacing:-1.5px; margin:4px 0 4px; line-height:1.05; background:linear-gradient(90deg,var(--pink-deep),var(--blue-deep)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;}
-  .hero .sub{font-size:12.5px; color:#a892a0;}
+  /* dday hero — 사진 배경 + 반투명 카드 + 하트 */
+  .hero{position:relative; background:url('hero.jpg?v=1') center/cover; border-radius:26px; min-height:198px; padding:0; display:flex; align-items:center; justify-content:center; text-align:center; margin-bottom:18px; overflow:hidden; box-shadow:0 10px 34px rgba(226,109,146,.16);}
+  .hero .frost{position:relative; z-index:2; background:rgba(255,255,255,.40); -webkit-backdrop-filter:blur(5px); backdrop-filter:blur(5px); border-radius:15px; padding:8px 20px; box-shadow:0 5px 15px rgba(80,60,90,.12);}
+  .hero .lbl{font-size:11px; color:#5d4a55; font-weight:800; letter-spacing:.2px;}
+  .hero .lbl i{color:var(--pink-deep); font-style:normal; margin:0 3px;}
+  .hero .big{font-size:31px; font-weight:900; letter-spacing:-1px; margin:1px 0 0; line-height:1.08; color:#fff; text-shadow:0 1px 7px rgba(0,0,0,.30);}
+  .hero .sub{display:none;}
+  .hero .fh{position:absolute; bottom:-18px; z-index:1; opacity:0; animation:heroRise 4.8s linear infinite; pointer-events:none;}
+  @keyframes heroRise{0%{transform:translateY(0) scale(.7); opacity:0;} 14%{opacity:.9;} 100%{transform:translateY(-234px) scale(1.12); opacity:0;}}
+  .hero .fh1{left:7%;  font-size:15px; animation-delay:0s;   animation-duration:4.9s;}
+  .hero .fh2{left:19%; font-size:12px; animation-delay:1.9s; animation-duration:5.6s;}
+  .hero .fh3{left:31%; font-size:18px; animation-delay:3.3s; animation-duration:4.4s;}
+  .hero .fh4{left:44%; font-size:13px; animation-delay:.8s;  animation-duration:5.9s;}
+  .hero .fh5{left:57%; font-size:16px; animation-delay:2.5s; animation-duration:4.7s;}
+  .hero .fh6{left:69%; font-size:12px; animation-delay:4.0s; animation-duration:5.3s;}
+  .hero .fh7{left:81%; font-size:19px; animation-delay:1.3s; animation-duration:4.2s;}
+  .hero .fh8{left:92%; font-size:13px; animation-delay:3.0s; animation-duration:6.0s;}
+  @media(prefers-reduced-motion:reduce){.hero .fh{display:none;}}
 
   .card{background:var(--card); border-radius:22px; padding:19px; margin-bottom:20px; box-shadow:0 8px 28px rgba(150,120,140,.10);}
   .sec-title{font-weight:800; font-size:17px; margin:0 0 13px; letter-spacing:-.2px; display:flex; align-items:center; gap:7px;}
@@ -312,9 +324,13 @@
   <div class="warn" id="warn"></div>
 
   <div class="hero">
-    <div class="lbl" id="heroLbl">우리가 함께한 지</div>
-    <div class="big" id="heroBig">D+—</div>
-    <div class="sub" id="heroSub"></div>
+    <span class="fh fh1">💕</span><span class="fh fh2">💗</span><span class="fh fh3">🩷</span><span class="fh fh4">💓</span>
+    <span class="fh fh5">💕</span><span class="fh fh6">💗</span><span class="fh fh7">🩷</span><span class="fh fh8">💓</span>
+    <div class="frost">
+      <div class="lbl" id="heroLbl">우리가 함께한 지</div>
+      <div class="big" id="heroBig">D+—</div>
+      <div class="sub" id="heroSub"></div>
+    </div>
   </div>
 
   <!-- 여행 -->
@@ -599,8 +615,7 @@ function renderDday(){
   const diff=Math.round((today-anv)/DAY);
   const dday=diff+1; /* 사귄 날이 1일 (당일 포함) */
   document.getElementById("heroBig").textContent = diff>=0 ? ("D+"+dday) : ("D"+diff);
-  document.getElementById("heroLbl").textContent = SET.a+" ♥ "+SET.b+" 함께한 지";
-  document.getElementById("heroSub").textContent = "시작일 "+SET.anniv;
+  document.getElementById("heroLbl").innerHTML = esc(SET.a)+" <i>♥</i> "+esc(SET.b)+" 함께한 지";
 
   renderAnnivs(); /* 마일스톤은 기념일·생일 카드에서 함께 표시 */
 }
