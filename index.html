@@ -681,11 +681,17 @@ function renderExpense(){
     const row=document.createElement("div"); row.className="exp-row";
     const amtTxt = it.cur==="PHP" ? ("\u20B1"+(it.amt||0).toLocaleString()+" ("+fmtW(krw)+")") : fmtW(it.amt||0);
     row.innerHTML='<span class="ec">'+c.e+'</span><span class="en">'+esc(it.name||c.l)+'</span>'+
-      (it.who?'<span class="ewho" style="background:'+(COL[it.who]||COL.both)+'">'+(it.who==="both"?"함께":esc(whoName(it.who)))+'</span>':"")+
+      '<span class="ewho" data-ewho="1" style="cursor:pointer;background:'+(COL[it.who||"both"]||COL.both)+'" title="눌러서 변경">'+((it.who||"both")==="both"?"함께":esc(whoName(it.who)))+'</span>'+
       '<span class="ea">'+amtTxt+'</span><span class="ephoto">'+(function(){var n=(it.photo?1:0)+(it.photos?Object.keys(it.photos).length:0); return n>0?("🧾"+(n>1?(" "+n):"")):"📷";})()+'</span>';
     const x=document.createElement("button"); x.className="ex"; x.textContent="\u2715";
     x.onclick=function(e){ e.stopPropagation(); if(db) db.ref(ROOT+"/trip/expenses/"+it.key).remove(); else { delete TRIP.expenses[it.key]; renderExpense(); } };
     row.style.cursor="pointer"; row.onclick=function(){ openRcpt(it.key, it); };
+    const ewBtn=row.querySelector('[data-ewho]');
+    if(ewBtn) ewBtn.onclick=function(e){ e.stopPropagation();
+      const order=["both","a","b"]; const next=order[(order.indexOf(it.who||"both")+1)%order.length];
+      if(db) db.ref(ROOT+"/trip/expenses/"+it.key+"/who").set(next);
+      else { TRIP.expenses[it.key].who=next; renderExpense(); }
+    };
     row.appendChild(x); box.appendChild(row);
   });
   if(!items.length){ const e=document.createElement("div"); e.className="exp-empty"; e.textContent="아직 등록된 경비가 없어요. 아래에서 추가해보세요!"; box.appendChild(e); }
@@ -999,7 +1005,7 @@ function editTripInfo(){
 function catLabel(e){
   if(e.cat==="date") return "💕 데이트"+(e.rating?(" ⭐"+e.rating):"")+(e.place?(" 📍"+e.place):"");
   if(e.cat==="exercise") return "💪 운동";
-  if(e.cat==="meet") return "🤝 약속·"+(e.meet==="mixed"?"이성":"동성")+(e.place?(" 📍"+e.place):"");
+  if(e.cat==="meet") return "🤝 약속·"+(e.meet==="all"?"동성이성":(e.meet==="mixed"?"이성":"동성"))+(e.place?(" 📍"+e.place):"");
   if(e.cat==="trip") return "✈️ 출장"+(e.time?(" "+e.time):"")+(e.place?(" 📍"+e.place):"");
   return e.title||"일정"; /* 옛 자유입력 일정 호환 */
 }
@@ -1053,7 +1059,8 @@ function showMeetSub(){ const s=document.getElementById("subMeet"); s.style.disp
   const inp=document.createElement("input"); inp.type="text"; inp.id="evPlace"; inp.className="placein"; inp.placeholder="📍 장소 입력 (필수)";
   s.appendChild(inp);
   const row=document.createElement("div"); row.className="submeet-row";
-  [["same","👬 동성만"],["mixed","👫 이성 포함"]].forEach(([k,l])=>{ const b=document.createElement("button"); b.className="subbtn"; b.textContent=l;
+  [["same","👬 동성"],["mixed","👫 이성"],["all","👥 동성·이성 포함"]].forEach(([k,l])=>{ const b=document.createElement("button"); b.className="subbtn"; b.textContent=l;
+    if(k==="all") b.style.gridColumn="1/-1";
     b.onclick=()=>addCat("meet",k); row.appendChild(b); });
   s.appendChild(row);
 }
