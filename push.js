@@ -89,9 +89,9 @@
   // ── "알림 켜기" 버튼 만들기 ────────────────────────
   function makeButton() {
     var perm = (typeof Notification !== "undefined") ? Notification.permission : "default";
-    if (perm === "granted" && localStorage.getItem("pushKey")) return;
+    var subscribed = (perm === "granted" && localStorage.getItem("pushKey"));
     var btn = document.createElement("button");
-    btn.textContent = "🔔 알림 켜기";
+    btn.textContent = subscribed ? "🔔 알림 다시 켜기" : "🔔 알림 켜기";
     btn.style.cssText =
       "position:fixed;right:14px;bottom:16px;z-index:9999;border:0;border-radius:24px;" +
       "padding:11px 16px;font-size:14px;font-weight:700;color:#fff;background:#e26d92;" +
