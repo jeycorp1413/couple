@@ -240,9 +240,15 @@
   .phday{margin-bottom:15px;}
   .phday:last-child{margin-bottom:0;}
   .phday .phd{font-size:13.5px; font-weight:800; color:var(--pink-deep); margin-bottom:8px;}
-  .phrow{display:flex; gap:8px; overflow-x:auto; padding-bottom:3px; -webkit-overflow-scrolling:touch;}
-  .phrow .ph{position:relative; flex:none; width:86px; height:86px; border-radius:13px; overflow:hidden; cursor:pointer; background:#fbf4f8;}
-  .phrow .ph img{width:100%; height:100%; object-fit:cover; display:block;}
+  .phrow{display:flex; gap:11px; overflow-x:auto; padding:12px 3px 10px; -webkit-overflow-scrolling:touch;}
+  /* 폴라로이드 사진 */
+  .phrow .ph{position:relative; flex:none; width:92px; cursor:pointer; background:#fff; border-radius:4px;
+    padding:5px 5px 15px; box-shadow:0 4px 13px rgba(150,120,140,.24);}
+  .phrow .ph img{width:100%; height:80px; object-fit:cover; display:block; border-radius:2px;}
+  .phrow .ph:nth-child(odd){transform:rotate(-2.4deg);}
+  .phrow .ph:nth-child(even){transform:rotate(2deg);}
+  .phrow .ph::before{content:""; position:absolute; top:-7px; left:50%; transform:translateX(-50%) rotate(-3.5deg);
+    width:36px; height:13px; background:rgba(255,213,150,.8); box-shadow:0 1px 2px rgba(0,0,0,.10); border-radius:2px; z-index:1;}
   .phadd{flex:none; width:86px; height:86px; border-radius:13px; border:1.5px dashed var(--pink); background:#fff; color:var(--pink-deep); font:inherit; font-size:12px; font-weight:700; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;}
   .phadd .pe{font-size:21px; line-height:1;}
   .phadd:active{background:#fceef4;}
@@ -319,6 +325,25 @@
   @keyframes hfloat{0%{transform:translateY(0);} 8%{opacity:var(--o,.5);} 85%{opacity:var(--o,.5);} 100%{transform:translateY(-112vh); opacity:0;}}
   @keyframes hsway{from{transform:translateX(-14px) rotate(-9deg) scale(.94);} to{transform:translateX(14px) rotate(9deg) scale(1.06);}}
   @media (prefers-reduced-motion: reduce){ #hearts{display:none;} }
+
+  /* 밤 모드 (21시~새벽 6시) */
+  body.night{background:linear-gradient(170deg,#171c36 0%,#251f42 100%);}
+  body.night .gear{background:#2c2a4a; border-color:#454168; color:#e8e3ff;}
+  body.night .card{box-shadow:0 8px 28px rgba(10,8,25,.45);}
+
+  /* 탭 하트 팡 */
+  b.pop{position:fixed; z-index:80; pointer-events:none; font-weight:400; transform:translate(-50%,-50%); animation:popfly .9s ease-out forwards;}
+  @keyframes popfly{0%{transform:translate(-50%,-50%) scale(.4); opacity:1;}
+    100%{transform:translate(calc(-50% + var(--dx,0px)),calc(-50% + var(--dy,-40px))) scale(1.15); opacity:0;}}
+
+  /* 기념일 폭죽 */
+  .confetti{position:fixed; inset:0; pointer-events:none; z-index:90; overflow:hidden;}
+  .confetti i{position:absolute; top:-4vh; border-radius:2px; animation:cfall linear forwards; opacity:.95;}
+  @keyframes cfall{to{transform:translateY(112vh) rotate(720deg); opacity:.55;}}
+  .celeb-toast{position:fixed; top:calc(14px + env(safe-area-inset-top)); left:50%; transform:translateX(-50%); z-index:95;
+    background:#fff; color:var(--pink-deep); border-radius:999px; padding:11px 20px; font-weight:800; font-size:14.5px;
+    box-shadow:0 8px 30px rgba(226,109,146,.4); white-space:nowrap; animation:celebIn .5s cubic-bezier(.34,1.56,.64,1);}
+  @keyframes celebIn{from{transform:translateX(-50%) translateY(-26px) scale(.8); opacity:0;} to{transform:translateX(-50%); opacity:1;}}
 </style>
 </head>
 <body>
@@ -1422,27 +1447,129 @@ start();
 </script>
 <script src="push.js?v=3"></script>
 <script>
-/* ---- 페이지 전체 하트 뽀용 효과 ---- */
+/* ---- 꾸미기 효과 모음: 떠다니는 하트 · 밤 모드 · 탭 팡 · 기념일 폭죽 · 접속 반짝 ---- */
 (function(){
-  if(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const box=document.createElement("div"); box.id="hearts"; box.setAttribute("aria-hidden","true");
-  document.body.appendChild(box);
-  const EMO=["💕","💗","🩷","💓"];
-  function spawn(){
-    if(document.hidden || box.childElementCount>=14) return;
-    const o=document.createElement("span"), i=document.createElement("i");
-    const dur=7+Math.random()*5;
-    o.style.left=(Math.random()*94)+"vw";
-    o.style.animationDuration=dur+"s";
-    o.style.setProperty("--o",(0.3+Math.random()*0.35).toFixed(2));
-    i.textContent=EMO[Math.floor(Math.random()*EMO.length)];
-    i.style.fontSize=(12+Math.random()*15)+"px";
-    i.style.animationDuration=(1.6+Math.random()*1.6)+"s";
-    o.appendChild(i); box.appendChild(o);
-    setTimeout(function(){ o.remove(); }, dur*1000+300);
+  const reduce=window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let NIGHT=false;
+
+  /* 밤 모드: 21시~새벽 6시엔 어두운 배경 + 별·달 */
+  function applyNight(){
+    const h=new Date().getHours();
+    NIGHT=(h>=21||h<6);
+    document.body.classList.toggle("night",NIGHT);
   }
-  setInterval(spawn, 850);
-  for(let k=0;k<5;k++) setTimeout(spawn, k*350);
+  applyNight(); setInterval(applyNight,60000);
+
+  const dayEMO=["💕","💗","🩷","💓"], nightEMO=["⭐","✨","🌙","💫","💗"];
+
+  /* 떠다니는 하트(밤엔 별·달) */
+  if(!reduce){
+    const box=document.createElement("div"); box.id="hearts"; box.setAttribute("aria-hidden","true");
+    document.body.appendChild(box);
+    function spawn(){
+      if(document.hidden || box.childElementCount>=14) return;
+      const EMO=NIGHT?nightEMO:dayEMO;
+      const o=document.createElement("span"), i=document.createElement("i");
+      const dur=7+Math.random()*5;
+      o.style.left=(Math.random()*94)+"vw";
+      o.style.animationDuration=dur+"s";
+      o.style.setProperty("--o",(0.3+Math.random()*0.35).toFixed(2));
+      i.textContent=EMO[Math.floor(Math.random()*EMO.length)];
+      i.style.fontSize=(12+Math.random()*15)+"px";
+      i.style.animationDuration=(1.6+Math.random()*1.6)+"s";
+      o.appendChild(i); box.appendChild(o);
+      setTimeout(function(){ o.remove(); }, dur*1000+300);
+    }
+    setInterval(spawn, 850);
+    for(let k=0;k<5;k++) setTimeout(spawn, k*350);
+  }
+
+  /* 탭하면 하트 팡 */
+  function burst(x,y,big){
+    if(reduce) return;
+    const EMO=NIGHT?nightEMO:dayEMO, n=big?12:7;
+    for(let i=0;i<n;i++){
+      const s=document.createElement("b"); s.className="pop";
+      s.textContent=EMO[Math.floor(Math.random()*EMO.length)];
+      const a=Math.random()*Math.PI*2, r=(big?50:34)+Math.random()*(big?60:44);
+      s.style.left=x+"px"; s.style.top=y+"px";
+      s.style.setProperty("--dx",Math.cos(a)*r+"px");
+      s.style.setProperty("--dy",(Math.sin(a)*r-34)+"px");
+      s.style.fontSize=((big?15:11)+Math.random()*10)+"px";
+      document.body.appendChild(s);
+      setTimeout(function(){ s.remove(); },950);
+    }
+  }
+  document.addEventListener("click",function(e){
+    if(e.target.closest("button,input,select,textarea,a,label,.ph,.gear")) return;
+    burst(e.clientX,e.clientY,false);
+  });
+
+  /* 기념일·마일스톤 당일 폭죽 (기기당 하루 1회) */
+  function confetti(){
+    const cols=["#f3a6c4","#e26d92","#9db6ff","#ffd166","#b48ad6","#7fd8be"];
+    const box=document.createElement("div"); box.className="confetti"; document.body.appendChild(box);
+    for(let i=0;i<80;i++){
+      const p=document.createElement("i");
+      p.style.left=(Math.random()*100)+"vw";
+      p.style.background=cols[i%cols.length];
+      p.style.width=(6+Math.random()*5)+"px"; p.style.height=(9+Math.random()*7)+"px";
+      p.style.animationDuration=(2.2+Math.random()*2)+"s";
+      p.style.animationDelay=(Math.random()*1.4)+"s";
+      box.appendChild(p);
+    }
+    setTimeout(function(){ box.remove(); },6200);
+  }
+  function toast(msg){
+    const t=document.createElement("div"); t.className="celeb-toast"; t.textContent=msg;
+    document.body.appendChild(t); setTimeout(function(){ t.remove(); },6000);
+  }
+  function maybeCelebrate(){
+    try{
+      if(typeof SET==="undefined"||!SET.anniv) return;
+      const t=midnight(new Date()), key=ymd(t);
+      if(localStorage.getItem("celebrated")===key) return;
+      let msg=null;
+      const anv=midnight(parseD(SET.anniv));
+      const dday=Math.round((t-anv)/DAY)+1;
+      if(dday>0){
+        if([100,200,300,500,1000,2000,3000].indexOf(dday)>=0) msg="우리 "+dday+"일이에요!";
+        else if(t.getMonth()===anv.getMonth()&&t.getDate()===anv.getDate()&&t.getFullYear()>anv.getFullYear())
+          msg="우리 "+(t.getFullYear()-anv.getFullYear())+"주년이에요!";
+      }
+      if(!msg && typeof ANNIVS!=="undefined"){
+        ANNIVS.forEach(function(a){ if(msg||!a.date) return; const d=parseD(a.date);
+          if(a.yearly ? (d.getMonth()===t.getMonth()&&d.getDate()===t.getDate()) : ymd(d)===key) msg=a.label+" 🎉"; });
+      }
+      if(msg){ localStorage.setItem("celebrated",key); confetti(); toast("🎉 "+msg); burst(innerWidth/2,innerHeight*0.3,true); }
+    }catch(e){}
+  }
+  setTimeout(maybeCelebrate,2500); setInterval(maybeCelebrate,30000);
+
+  /* 상대방 접속 반짝: 상대 기기가 들어오면 하트 팡 + 문구 */
+  let presenceReady=false;
+  function setupPresence(){
+    if(presenceReady || typeof db==="undefined" || !db) return;
+    presenceReady=true;
+    let cid=localStorage.getItem("coupleClientId");
+    if(!cid){ cid="c"+Date.now().toString(36)+Math.random().toString(36).slice(2,7); localStorage.setItem("coupleClientId",cid); }
+    const myRef=db.ref(ROOT+"/presence/"+cid);
+    db.ref(".info/connected").on("value",function(s){
+      if(s.val()){ myRef.onDisconnect().remove(); myRef.set({t:Date.now()}); }
+    });
+    setInterval(function(){ myRef.update({t:Date.now()}); },240000); /* 4분마다 갱신 */
+    let others=-1;
+    db.ref(ROOT+"/presence").on("value",function(s){
+      const v=s.val()||{}, fresh=Date.now()-15*60000;
+      const n=Object.keys(v).filter(function(k){ return k!==cid && v[k] && v[k].t>fresh; }).length;
+      const live=document.getElementById("liveTag");
+      if(live && live.className.indexOf("on")>=0)
+        live.textContent = n>0 ? "● 둘이 함께 보고 있어요 💗" : "● 실시간 연결됨";
+      if(others===0 && n>others){ burst(innerWidth/2,innerHeight*0.25,true); toast("💗 지금 함께 보고 있어요"); }
+      others=n;
+    });
+  }
+  setInterval(setupPresence,3000); setTimeout(setupPresence,1500);
 })();
 </script>
 </body>
