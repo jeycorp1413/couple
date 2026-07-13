@@ -71,7 +71,8 @@
   .grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px;}
   .gd{text-align:center; font-size:12px; font-weight:700; color:#bba7b3; padding:4px 0;}
   .gd.sun,.gd.sat{color:#e8607f;}
-  .cell{min-height:64px; border-radius:11px; padding:5px 5px 4px; background:#fbf4f8; cursor:pointer; display:flex; flex-direction:column; gap:2px; overflow:hidden; border:1.5px solid transparent;}
+  .cell{min-height:64px; border-radius:11px; padding:5px 3px 4px; background:#fbf4f8; cursor:pointer; display:flex; flex-direction:column; gap:2px; overflow:hidden; border:1.5px solid transparent;}
+  .cell .dn{padding-left:2px;}
   .cell.blank{background:transparent; cursor:default;}
   .cell.today{border-color:var(--pink); background:#fff;}
   .cell .dn{font-size:12.5px; font-weight:700; color:#9c8893;}
@@ -79,7 +80,8 @@
   .cell .sun,.cell .sat{color:#e8607f;}
   .cell .dn.hol{color:#e8607f;}
   .holname{font-size:9px; color:#e8607f; font-weight:700; line-height:1.15; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .ev{font-size:10.5px; line-height:1.25; color:#fff; border-radius:5px; padding:1px 4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .ev{font-size:10.5px; font-weight:600; letter-spacing:-.5px; line-height:1.3; color:#fff; border-radius:5px; padding:2px 1px; text-align:center;
+    white-space:normal; word-break:break-all; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
   .more{font-size:9.5px; color:#b6a3ae; padding-left:2px;}
 
   /* todo */
@@ -712,7 +714,7 @@ function renderCal(){
     if(hn) html+='<div class="holname">'+esc(hn)+'</div>';
     if(inTrip) html+='<div class="trip-dot">🌴</div>';
     const lim=hn?2:3;
-    evs.slice(0,lim).forEach(e=>{ html+='<div class="ev" style="background:'+(COL[e.who]||COL.a)+'">'+esc(catLabel(e))+'</div>'; });
+    evs.slice(0,lim).forEach(e=>{ html+='<div class="ev" style="background:'+(COL[e.who]||COL.a)+'">'+esc(catShort(e))+'</div>'; });
     if(evs.length>lim) html+='<div class="more">+'+(evs.length-lim)+'</div>';
     cell.innerHTML=html;
     cell.onclick=()=>openDay(ds);
@@ -1076,6 +1078,14 @@ function editTripInfo(){
 }
 
 /* ---- day modal ---- */
+/* 달력 칸용 짧은 라벨 — 이모지·장소·상세는 날짜를 눌렀을 때 표시 */
+function catShort(e){
+  if(e.cat==="date") return "데이트";
+  if(e.cat==="exercise") return "운동";
+  if(e.cat==="meet") return "약속";
+  if(e.cat==="trip") return "출장";
+  return e.title||"일정";
+}
 function catLabel(e){
   if(e.cat==="date") return "💕 데이트"+(e.rating?(" ⭐"+e.rating):"")+(e.place?(" 📍"+e.place):"");
   if(e.cat==="exercise") return "💪 운동";
