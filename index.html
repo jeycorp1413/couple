@@ -1427,7 +1427,7 @@ start();
   if(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const box=document.createElement("div"); box.id="hearts"; box.setAttribute("aria-hidden","true");
   document.body.appendChild(box);
-  const EMO=["💗","💕","🩷","❤️","💖"];
+  const EMO=["💕","💗","🩷","💓"];
   function spawn(){
     if(document.hidden || box.childElementCount>=14) return;
     const o=document.createElement("span"), i=document.createElement("i");
