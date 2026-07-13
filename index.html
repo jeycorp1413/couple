@@ -15,8 +15,8 @@
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <style>
   @font-face{
-    font-family:"MongCreamGothic";
-    src:url("fonts/MongCreamGothic.woff2") format("woff2");
+    font-family:"MongBabyGulim";
+    src:url("fonts/MongBabyGulim.woff2") format("woff2");
     font-weight:normal; font-style:normal; font-display:swap;
   }
   :root{
@@ -25,7 +25,7 @@
     --ink:#5b4a52; --muted:#a892a0;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-  body{margin:0; font-size:15.5px; font-family:"MongCreamGothic",Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  body{margin:0; font-size:15.5px; font-family:"MongBabyGulim",Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
     background:linear-gradient(160deg,#fff7fb 0%,#f3f7ff 100%); color:var(--ink); min-height:100vh;
     -webkit-text-size-adjust:100%;}
   .wrap{max-width:480px; margin:0 auto;
@@ -142,6 +142,8 @@
   .subbtn{border:1.5px solid var(--pink); background:#fff; border-radius:12px; padding:13px; font:inherit; font-weight:700; font-size:14px; color:var(--pink-deep); cursor:pointer;}
   .subbtn:active{background:#fceef4;}
   .mbtns{display:flex; gap:8px; margin-top:18px;}
+  .evedit{background:#fbf4f8; border-radius:12px; padding:11px; margin:7px 0 10px;}
+  .evedit .placein{width:100%; border:1.5px solid var(--line); border-radius:12px; padding:11px 13px; font:inherit; font-size:16px; outline:0;}
   .btn{flex:1; border:0; background:var(--pink-deep); color:#fff; font:inherit; font-weight:700; padding:12px; border-radius:12px; cursor:pointer;}
   .btn.ghost{background:#f3e8ee; color:#9a7888;}
 
@@ -363,6 +365,12 @@
   body.night .celeb-toast{background:#2a2d47; color:#ff9ec1; box-shadow:0 8px 30px rgba(0,0,0,.5);}
   body.night .catbtn:active, body.night .mkbtn:active, body.night .subbtn:active, body.night .phadd:active{background:#32304e;}
   body.night .hero .fh{display:none;}
+  body.night .memo .mtx{color:#d5cfe2;}
+  body.night .memo .mt{color:#7b7592;}
+  body.night .irow input[type=text]{background:#262940; color:#ddd6e8;}
+  body.night .dayev{border-bottom-color:#34374f;}
+  body.night .submeet .placein, body.night .evedit .placein{background:#262940; color:#ddd6e8;}
+  body.night .evedit{background:#262940;}
   body.night .trip-day .td-body{color:#c9c3da;}
   body.night .trip-day .td-x{color:#8f87a5;}
   body.night .wx-d{background:#262940;}
@@ -1129,10 +1137,14 @@ function renderDayList(){
     if(e.cat==="date" && e.review) dt+='<div class="revview">“'+esc(e.review)+'”</div>';
     dt+='</span>';
     r.innerHTML=dt;
+    r.style.cursor="pointer";
+    r.onclick=ev=>{ if(ev.target.closest(".dx")) return; toggleEdit(e, wrap); };
     if(e.cat==="date"){ const rb=document.createElement("button"); rb.className="dx"; rb.textContent="⭐"; rb.title="식당 후기"; rb.onclick=()=>toggleRev(e, wrap); r.appendChild(rb); }
+    const ed=document.createElement("button"); ed.className="dx"; ed.textContent="✏️"; ed.title="수정";
+    ed.onclick=()=>toggleEdit(e, wrap);
     const x=document.createElement("button"); x.className="dx"; x.textContent="✕";
-    x.onclick=()=>{ if(db&&e.id) db.ref(ROOT+"/events/"+e.id).remove(); };
-    r.appendChild(x); wrap.appendChild(r); box.appendChild(wrap); });
+    x.onclick=()=>{ if(db&&e.id && confirm("이 일정을 삭제할까요?")) db.ref(ROOT+"/events/"+e.id).remove(); };
+    r.appendChild(ed); r.appendChild(x); wrap.appendChild(r); box.appendChild(wrap); });
 }
 function stars(n){ let s=""; for(let i=1;i<=5;i++) s+=i<=n?"★":"☆"; return s; }
 function toggleRev(e, wrap){
@@ -1147,6 +1159,59 @@ function toggleRev(e, wrap){
   const sv=document.createElement("button"); sv.className="subbtn full"; sv.textContent="후기 저장";
   sv.onclick=()=>{ if(db&&e.id) db.ref(ROOT+"/events/"+e.id).update({rating:rating||null, place:pl.value.trim()||null, review:rv.value.trim()||null}); box.remove(); };
   box.append(st, pl, rv, sv); wrap.appendChild(box);
+}
+/* 일정 인라인 수정 폼 */
+function toggleEdit(e, wrap){
+  const old=wrap.querySelector(".evedit");
+  if(old){ old.remove(); return; }
+  const f=document.createElement("div"); f.className="evedit";
+  let who=e.who||"a", meetSel=e.meet||null;
+  const whoRow=document.createElement("div"); whoRow.className="who";
+  (function drawWho(){ whoRow.innerHTML='<span class="wl">누구</span>';
+    [["a",SET.a,COL.a],["b",SET.b,COL.b],["both","함께",COL.both]].forEach(([k,nm,c])=>{
+      const b=document.createElement("button"); b.textContent=nm;
+      if(k===who){ b.classList.add("on"); b.style.background=c; b.style.color="#fff"; b.style.borderColor=c; }
+      b.onclick=()=>{ who=k; drawWho(); }; whoRow.appendChild(b); });
+  })();
+  function drawWho(){ whoRow.querySelectorAll("button").forEach((b,i)=>{ const k=["a","b","both"][i], c=[COL.a,COL.b,COL.both][i];
+    if(k===who){ b.classList.add("on"); b.style.background=c; b.style.color="#fff"; b.style.borderColor=c; }
+    else { b.classList.remove("on"); b.style.background=""; b.style.color=""; b.style.borderColor=""; } }); }
+  f.appendChild(whoRow);
+  const date=document.createElement("input"); date.type="date"; date.className="placein"; date.value=e.date||curDay; date.style.marginTop="8px"; f.appendChild(date);
+  let meetRow=null;
+  if(e.cat==="meet"){
+    meetRow=document.createElement("div"); meetRow.className="submeet-row"; meetRow.style.marginTop="8px";
+    (function drawMeet(){ meetRow.innerHTML="";
+      [["same","👬 동성"],["mixed","👫 이성"],["all","👥 동성·이성"]].forEach(([k,l])=>{
+        const b=document.createElement("button"); b.className="subbtn"; b.textContent=l;
+        if(k===meetSel){ b.style.background="var(--pink)"; b.style.color="#fff"; }
+        b.onclick=()=>{ meetSel=k; drawMeet(); }; meetRow.appendChild(b); });
+    })();
+    function drawMeet(){ meetRow.querySelectorAll("button").forEach((b,i)=>{ const k=["same","mixed","all"][i];
+      if(k===meetSel){ b.style.background="var(--pink)"; b.style.color="#fff"; } else { b.style.background=""; b.style.color=""; } }); }
+    f.appendChild(meetRow);
+  }
+  let place=null, time=null;
+  if(e.cat!=="exercise"){
+    place=document.createElement("input"); place.type="text"; place.className="placein"; place.placeholder="📍 장소"; place.value=e.place||""; place.style.marginTop="8px"; f.appendChild(place);
+  }
+  if(e.cat==="trip"){
+    time=document.createElement("input"); time.type="text"; time.className="placein"; time.placeholder="🕐 시간 (예: 오전 9시, 1박2일…)"; time.value=e.time||""; time.style.marginTop="8px"; f.appendChild(time);
+  }
+  const btns=document.createElement("div"); btns.className="mbtns"; btns.style.marginTop="10px";
+  const cxl=document.createElement("button"); cxl.className="btn ghost"; cxl.textContent="취소"; cxl.onclick=()=>f.remove();
+  const sv=document.createElement("button"); sv.className="btn"; sv.style.background="var(--pink-deep)"; sv.style.color="#fff"; sv.style.border="0"; sv.style.borderRadius="12px"; sv.style.padding="11px"; sv.style.flex="1"; sv.style.font="inherit"; sv.style.fontWeight="700"; sv.style.cursor="pointer"; sv.textContent="저장";
+  sv.onclick=()=>{
+    if(!db||!e.id) return;
+    const nd=date.value||e.date;
+    const upd={ who:who, date:nd, meet:e.cat==="meet"?meetSel:(e.meet||null),
+      place:place?(place.value.trim()||null):(e.place||null),
+      time:time?(time.value.trim()||null):(e.time||null) };
+    db.ref(ROOT+"/events/"+e.id).update(upd);
+    f.remove();
+  };
+  btns.appendChild(cxl); btns.appendChild(sv); f.appendChild(btns);
+  wrap.appendChild(f);
 }
 function renderEvWho(){ chips("evWho", evWho, w=>{evWho=w; renderEvWho();}); }
 function renderCats(){
