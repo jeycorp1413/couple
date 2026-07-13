@@ -326,10 +326,36 @@
   @keyframes hsway{from{transform:translateX(-14px) rotate(-9deg) scale(.94);} to{transform:translateX(14px) rotate(9deg) scale(1.06);}}
   @media (prefers-reduced-motion: reduce){ #hearts{display:none;} }
 
-  /* 밤 모드 (21시~새벽 6시) */
-  body.night{background:linear-gradient(170deg,#171c36 0%,#251f42 100%);}
-  body.night .gear{background:#2c2a4a; border-color:#454168; color:#e8e3ff;}
-  body.night .card{box-shadow:0 8px 28px rgba(10,8,25,.45);}
+  /* 밤 모드 (21시~새벽 6시) — 애플 다크모드 스타일 */
+  body.night{
+    --card:#1c1e30; --line:#34374f; --ink:#e9e7f2; --muted:#9b98b4;
+    --pink-deep:#ff8fb3; --blue-deep:#8fb3ff; --both:#c9a4f5;
+    background:linear-gradient(170deg,#12142a 0%,#1d1738 100%);
+  }
+  body.night .gear{background:#262940; border-color:#3c3f5a; color:#e8e3ff;}
+  body.night .card{box-shadow:0 8px 28px rgba(8,6,22,.5);}
+  body.night .hero .frost{background:rgba(22,20,44,.5);}
+  body.night .hero .lbl{color:#ded4e6;}
+  body.night .mini-add, body.night .who button, body.night .catbtn, body.night .subbtn,
+  body.night .mkbtn, body.night .cmt-who-sel button, body.night .meta-edit, body.night .rate-sync,
+  body.night .exp-add select, body.night .exp-add input, body.night .exp-who span,
+  body.night .modal input[type=text], body.night .modal input[type=date], body.night .phadd{background:#262940; color:#ddd6e8;}
+  body.night .mini-add, body.night .subbtn, body.night .phadd{color:var(--pink-deep);}
+  body.night .cell{background:#232639;}
+  body.night .cell.today{background:#2e3149;}
+  body.night .cell .dn{color:#b3aec4;}
+  body.night .modal, body.night .trip-day{background:#20223a;}
+  body.night .modal label{color:#a9a4c2;}
+  body.night .revbox, body.night .trip-meta .tm-info, body.night .mkitem.fresh{background:#262940;}
+  body.night .btn.ghost{background:#2c2f47; color:#b9aecb;}
+  body.night .anniv{border-bottom-color:#34374f;}
+  body.night .empty{color:#7b7592;}
+  body.night .exp-row .en{color:#d9d2e2;}
+  body.night .wx-t{color:#b7b2c6;}
+  body.night .warn{background:#3a3423; color:#e6cf8e;}
+  body.night .celeb-toast{background:#2a2d47; color:#ff9ec1; box-shadow:0 8px 30px rgba(0,0,0,.5);}
+  body.night .catbtn:active, body.night .mkbtn:active, body.night .subbtn:active, body.night .phadd:active{background:#32304e;}
+  body.night .hero .fh{display:none;}
 
   /* 탭 하트 팡 */
   b.pop{position:fixed; z-index:80; pointer-events:none; font-weight:400; transform:translate(-50%,-50%); animation:popfly .9s ease-out forwards;}
@@ -1460,7 +1486,7 @@ start();
   }
   applyNight(); setInterval(applyNight,60000);
 
-  const dayEMO=["💕","💗","🩷","💓"], nightEMO=["⭐","✨","🌙","💫","💗"];
+  const dayEMO=["💕","💗","🩷","💓"], nightEMO=["⭐","✨","🌙","💫"];
 
   /* 떠다니는 하트(밤엔 별·달) */
   if(!reduce){
