@@ -125,8 +125,8 @@
             updatedAt: Date.now(),
           });
           localStorage.setItem("pushKey", key);
-          if (window.__pushBtn) window.__pushBtn.remove();
-          alert("알림이 켜졌어요! 💗 이제 서로 뭔가 등록하면 알림이 가요.");
+          if (window.__pushBtn) window.__pushBtn.textContent = "🔔 알림 다시 켜기";
+          alert("알림이 켜졌어요! 💗 이제 서로 뭔가 등록하면 알림이 가요.\n(다른 한 명도 각자 폰에서 이 버튼을 눌러주세요)");
         });
       }).catch(function (e) {
         alert("알림 설정에 실패했어요: " + (e && e.message ? e.message : e));
