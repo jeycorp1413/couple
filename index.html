@@ -422,43 +422,6 @@
     </div>
   </div>
 
-  <!-- 여행 -->
-  <div class="card">
-    <div class="sec-title fold-head" id="tripHead">🌴 <span id="tripTitle">여행</span> <span class="trip-right"><span class="trip-dday" id="tripDday"></span><span class="fold" id="tripFold">▸</span></span></div>
-    <div id="tripBody" style="display:none">
-      <div class="trip-meta" id="tripMeta"></div>
-      <div class="trip-foods-title">🌤️ 보홀(팡라오) 날씨</div>
-      <div id="tripWeather"></div>
-      <div id="tripDays"></div>
-      <button class="mini-add tripbtn" id="tripDayAdd">+ 일정 추가</button>
-      <div class="trip-sec">
-        <div class="trip-foods-title fold-head" data-fold="exp">💸 여행 경비 계산기 <span class="fold">▾</span></div>
-        <div class="sec-body"><div id="tripExpense"></div></div>
-      </div>
-      <div class="trip-sec">
-        <div class="trip-foods-title fold-head" data-fold="prep">🎒 준비물 <span class="fold">▾</span></div>
-        <div class="sec-body">
-          <div id="tripPrep"></div>
-          <button class="mini-add tripbtn" id="tripPrepAdd">+ 준비물 추가</button>
-        </div>
-      </div>
-      <div class="trip-sec">
-        <div class="trip-foods-title fold-head" data-fold="issue">💡 이슈 · 메모 <span class="fold">▾</span></div>
-        <div class="sec-body">
-          <div id="tripIssues"></div>
-          <button class="mini-add tripbtn" id="tripIssueAdd">+ 이슈 추가</button>
-        </div>
-      </div>
-      <div class="trip-sec">
-        <div class="trip-foods-title fold-head" data-fold="food">🍽️ 가고싶은 맛집 <span class="fold">▾</span></div>
-        <div class="sec-body">
-          <div id="tripFoods"></div>
-          <div class="cmt-input food-add"><div class="cmt-who-sel" id="foodWhoSel"></div><input type="text" id="foodText" placeholder="맛집·메뉴를 적어보세요…"><button class="cmt-add" id="foodAdd">추가</button></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- 기념일·생일 -->
   <div class="card">
     <div class="sec-title">🎂 기념일 · 생일 <button class="mini-add" id="annivAdd">+ 추가</button></div>
@@ -735,12 +698,10 @@ function renderCal(){
     const wd=new Date(viewY,viewM,d).getDay();
     const hn=HOLIDAYS[ds];
     const red=(wd===0||wd===6||hn)?" sun":"";
-    const inTrip = TRIP.start && TRIP.end && ds>=TRIP.start && ds<=TRIP.end;
-    const cell=document.createElement("div"); cell.className="cell"+(ds===todayStr?" today":"")+(inTrip?" trip":"");
+    const cell=document.createElement("div"); cell.className="cell"+(ds===todayStr?" today":"");
     const evs=byDate[ds]||[];
     let html='<div class="dn'+red+(hn?" hol":"")+'">'+d+'</div>';
     if(hn) html+='<div class="holname">'+esc(hn)+'</div>';
-    if(inTrip) html+='<div class="trip-dot">🌴</div>';
     const lim=hn?2:3;
     evs.slice(0,lim).forEach(e=>{ html+='<div class="ev" style="background:'+(COL[e.who]||COL.a)+'">'+esc(catShort(e))+'</div>'; });
     if(evs.length>lim) html+='<div class="more">+'+(evs.length-lim)+'</div>';
@@ -1471,7 +1432,7 @@ function saveSet(){
   document.getElementById("setOv").classList.remove("open");
 }
 
-function refreshAll(){ renderDday(); renderAnnivs(); renderCal(); renderTrip(); renderPhotos(); renderMakeups(); renderMkWho(); renderMkBtns(); renderTodos(); renderWishes(); renderMemos(); renderMemoWho();
+function refreshAll(){ renderDday(); renderAnnivs(); renderCal(); renderPhotos(); renderMakeups(); renderMkWho(); renderMkBtns(); renderTodos(); renderWishes(); renderMemos(); renderMemoWho();
   document.querySelector(".top h1").innerHTML='<span class="y">'+esc(SET.b)+'</span> 💗 <span class="h">'+esc(SET.a)+'</span>';
 }
 
@@ -1499,22 +1460,11 @@ document.getElementById("lbSave").onclick=savePhoto;
 document.getElementById("lbDel").onclick=()=>{ if(db&&lbId) db.ref(ROOT+"/photos/"+lbId).remove(); document.getElementById("lbOv").classList.remove("open"); };
 document.getElementById("lbOv").onclick=e=>{ if(e.target.id==="lbOv") document.getElementById("lbOv").classList.remove("open"); };
 document.getElementById("photoHead").onclick=()=>{ photoOpen=!photoOpen; document.getElementById("photoList").style.display=photoOpen?"":"none"; document.getElementById("photoFold").textContent=photoOpen?"▾":"▸"; };
-document.querySelectorAll(".trip-sec > .fold-head").forEach(function(h){
-  var body=h.nextElementSibling, ar=h.querySelector(".fold"), key="fold_"+(h.dataset.fold||"");
-  h.onclick=function(){ var open=body.style.display!=="none"; body.style.display=open?"none":""; ar.textContent=open?"▸":"▾"; try{ localStorage.setItem(key, open?"1":"0"); }catch(e){} };
-  try{ if(localStorage.getItem(key)==="1"){ body.style.display="none"; ar.textContent="▸"; } }catch(e){}
-});
-document.getElementById("tripHead").onclick=()=>{ tripOpen=!tripOpen; document.getElementById("tripBody").style.display=tripOpen?"":"none"; document.getElementById("tripFold").textContent=tripOpen?"▾":"▸"; };
 /* 할일·위시·마음전하기·한마디 접기/펼치기 */
 [["todoHead","todoBody","todoFold"],["wishHead","wishBody","wishFold"],["mkHead","mkBody","mkFold"],["memoHead","memoBody","memoFold"]].forEach(([h,b,f])=>{
   let open=false;
   document.getElementById(h).onclick=()=>{ open=!open; document.getElementById(b).style.display=open?"":"none"; document.getElementById(f).textContent=open?"▾":"▸"; };
 });
-document.getElementById("tripDayAdd").onclick=addTripDay;
-document.getElementById("tripPrepAdd").onclick=addPrepCat;
-document.getElementById("tripIssueAdd").onclick=()=>addSec("issues");
-document.getElementById("foodAdd").onclick=addFood;
-document.getElementById("foodText").addEventListener("keydown",e=>{ if(e.key==="Enter") addFood(); });
 document.getElementById("gearBtn").onclick=openSet;
 document.getElementById("setClose").onclick=()=>document.getElementById("setOv").classList.remove("open");
 document.getElementById("setSave").onclick=saveSet;
@@ -1525,7 +1475,7 @@ function start(){
   refreshAll();
   const live=document.getElementById("liveTag");
   if(!configured){ document.getElementById("warn").style.display="block";
-    document.getElementById("warn").innerHTML="⚠ <b>Firebase 설정 전</b> — 지금은 미리보기예요."; TRIP=JSON.parse(JSON.stringify(TRIP_SEED)); renderTrip(); return; }
+    document.getElementById("warn").innerHTML="⚠ <b>Firebase 설정 전</b> — 지금은 미리보기예요."; return; }
   firebase.initializeApp(firebaseConfig); db=firebase.database();
   live.className="live on"; live.textContent="● 실시간 연결됨 — 둘이 함께 보고 있어요";
   db.ref(ROOT+"/settings").on("value",s=>{ const v=s.val(); if(v){ SET=Object.assign(SET,v); } else { db.ref(ROOT+"/settings").set(SET); } refreshAll(); });
@@ -1536,16 +1486,6 @@ function start(){
   db.ref(ROOT+"/memos").on("value",s=>{ const v=s.val()||{}; MEMOS=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderMemos(); });
   db.ref(ROOT+"/anniversaries").on("value",s=>{ const v=s.val()||{}; ANNIVS=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderAnnivs(); });
   db.ref(ROOT+"/wishes").on("value",s=>{ const v=s.val()||{}; WISHES=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderWishes(); });
-  db.ref(ROOT+"/trip").on("value",s=>{ const v=s.val();
-    if(!v){ db.ref(ROOT+"/trip").set(TRIP_SEED); return; }
-    if(!v.seeded2){ db.ref(ROOT+"/trip").update({prep:v.prep||TRIP_SEED.prep, issues:v.issues||TRIP_SEED.issues, seeded2:true}); return; }
-    if(!v.seeded3){ const np={}; const pr=v.prep||{};
-      Object.keys(pr).forEach(k=>{ const p=pr[k]; let items=p.items;
-        if(!items){ items={}; String(p.body||"").split("\n").map(x=>x.trim()).filter(Boolean).forEach((line,i)=>{ items["m"+i]={text:line, done:false, t:i+1}; }); }
-        np[k]={order:p.order||0, label:p.label||"", items:items}; });
-      db.ref(ROOT+"/trip").update({prep:np, seeded3:true}); return; }
-    if(!v.heart){ db.ref(ROOT+"/trip").update({title:"보홀 4박 6일 여행 💗", heart:true}); return; }
-    TRIP=v; renderTrip(); renderCal(); });
   setInterval(renderDday, 60000);
 }
 start();
