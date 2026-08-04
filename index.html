@@ -37,9 +37,17 @@
   .top h1 .h{color:var(--pink-deep);} .top h1 .y{color:var(--blue-deep);}
   .gear{border:1.5px solid var(--line); background:#fff; border-radius:50%; width:40px; height:40px; cursor:pointer; font-size:17px; flex:none;}
   .live{display:none;}
-  .triplink{display:block; text-align:center; margin:2px 0 6px; padding:12px; font-size:13.5px; font-weight:700;
-    color:var(--pink-deep); text-decoration:none; background:#fff; border:1.5px dashed var(--line); border-radius:16px;}
-  .triplink:active{opacity:.6;}
+  .trip-grp{font-size:12px; font-weight:800; color:var(--muted); margin:12px 2px 7px;}
+  .trip-grp:first-child{margin-top:2px;}
+  .trip-item{display:flex; align-items:center; gap:11px; text-decoration:none; color:var(--ink);
+    background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:12px 13px; margin-bottom:9px;}
+  .trip-item:active{opacity:.6;}
+  .trip-item .ti-emoji{font-size:24px; flex:none;}
+  .trip-item .ti-tx{display:flex; flex-direction:column; flex:1; line-height:1.35;}
+  .trip-item .ti-tx b{font-size:14.5px; font-weight:800; color:var(--pink-deep);}
+  .trip-item .ti-sub{font-size:11.5px; color:var(--muted);}
+  .trip-item .ti-go{font-size:20px; color:#d8c3ce; flex:none;}
+  .trip-empty{font-size:12.5px; color:var(--muted); background:#fbf4f8; border-radius:12px; padding:12px 13px; text-align:center; line-height:1.6;}
 
   /* dday hero — 사진 배경 + 반투명 카드 + 하트 */
   .hero{position:relative; background:url('hero-couple.jpg?v=1') center 30%/cover; border-radius:26px; min-height:262px; padding:0; display:flex; align-items:center; justify-content:center; text-align:center; margin-bottom:18px; overflow:hidden; box-shadow:0 10px 34px rgba(226,109,146,.16);}
@@ -495,7 +503,20 @@
     </div>
   </div>
 
-  <a class="triplink" href="trip-bohol.html">🌴 지난 여행 추억 · 보홀 4박 6일 💗</a>
+  <!-- 지난 여행 추억 -->
+  <div class="card">
+    <div class="sec-title fold-head" id="tripMemHead">🌴 지난 여행 추억 <span class="fold" id="tripMemFold">▸</span></div>
+    <div id="tripMemBody" style="display:none">
+      <div class="trip-grp">🗓️ 다녀온 여행</div>
+      <a class="trip-item" href="trip-bohol.html">
+        <span class="ti-emoji">🏝️</span>
+        <span class="ti-tx"><b>보홀 4박 6일 💗</b><span class="ti-sub">2026.07.27 ~ 08.01</span></span>
+        <span class="ti-go">›</span>
+      </a>
+      <div class="trip-grp">✈️ 앞으로 갈 여행</div>
+      <div class="trip-empty">다음 여행 계획이 생기면 여기에 추가할게요 ✈️💕</div>
+    </div>
+  </div>
 </div>
 
 <!-- day modal -->
@@ -1466,7 +1487,7 @@ document.getElementById("lbDel").onclick=()=>{ if(db&&lbId) db.ref(ROOT+"/photos
 document.getElementById("lbOv").onclick=e=>{ if(e.target.id==="lbOv") document.getElementById("lbOv").classList.remove("open"); };
 document.getElementById("photoHead").onclick=()=>{ photoOpen=!photoOpen; document.getElementById("photoList").style.display=photoOpen?"":"none"; document.getElementById("photoFold").textContent=photoOpen?"▾":"▸"; };
 /* 할일·위시·마음전하기·한마디 접기/펼치기 */
-[["todoHead","todoBody","todoFold"],["wishHead","wishBody","wishFold"],["mkHead","mkBody","mkFold"],["memoHead","memoBody","memoFold"]].forEach(([h,b,f])=>{
+[["todoHead","todoBody","todoFold"],["wishHead","wishBody","wishFold"],["mkHead","mkBody","mkFold"],["memoHead","memoBody","memoFold"],["tripMemHead","tripMemBody","tripMemFold"]].forEach(([h,b,f])=>{
   let open=false;
   document.getElementById(h).onclick=()=>{ open=!open; document.getElementById(b).style.display=open?"":"none"; document.getElementById(f).textContent=open?"▾":"▸"; };
 });
