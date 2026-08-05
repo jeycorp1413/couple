@@ -121,7 +121,8 @@ const esc=s=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"
 /* 질문 정의 */
 const STAR_LABELS=["","별로였어요…🥲","음~ 그럭저럭","좋았어요!","완전 만족!","인생 여행 💯"];
 const QUESTIONS=[
-  {id:"guide", type:"star", q:"담당 가이드(지영)의 친절도는?", sub:"※ 낮은 별점은 가이드가 삐집니다 🥲"},
+  {id:"guide",  type:"star", q:"담당 가이드(지영)의 친절도는?", sub:"※ 낮은 별점은 가이드가 삐집니다 🥲"},
+  {id:"beauty", type:"star", q:"담당 가이드(지영)의 미모는?", sub:"솔직하게… 근데 5점 아니면 삐짐 💢"},
   {id:"stay",  type:"star", q:"숙소·동선 배정은 만족스러우셨나요?"},
   {id:"food",  type:"star", q:"맛집·먹거리 선정은 어떠셨어요?"},
   {id:"total", type:"star", q:"종합 만족도를 매겨주세요!"},
