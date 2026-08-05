@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>🏝️ 지영투어 고객만족도 조사</title>
+<meta name="theme-color" content="#e26d92">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+  :root{ --pink:#f6a5c0; --pink-deep:#e26d92; --blue-deep:#5b8fd6; --bg:#fff7fb; --card:#fff; --line:#f1dee8; --ink:#5b4a52; --muted:#a892a0; }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{margin:0; font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    background:linear-gradient(160deg,#fff7fb 0%,#f3f7ff 100%); color:var(--ink); min-height:100vh; -webkit-text-size-adjust:100%;}
+  .wrap{max-width:480px; margin:0 auto; padding:calc(20px + env(safe-area-inset-top)) 16px calc(40px + env(safe-area-inset-bottom));}
+
+  .hero{background:linear-gradient(135deg,#ffe3ee 0%,#e3edff 100%); border-radius:24px; padding:26px 20px; text-align:center; margin-bottom:18px; box-shadow:0 10px 30px rgba(226,109,146,.16);}
+  .hero .brand{font-size:13px; font-weight:800; color:var(--pink-deep); letter-spacing:.4px;}
+  .hero h1{margin:8px 0 6px; font-size:23px; font-weight:900; letter-spacing:-.5px;}
+  .hero p{margin:0; font-size:13px; color:#9a7e8c; line-height:1.5;}
+  .hero .stamp{display:inline-block; margin-top:12px; font-size:11.5px; font-weight:700; color:#b5836a; border:1.5px dashed #e3b9a3; border-radius:999px; padding:4px 12px; transform:rotate(-3deg);}
+
+  .card{background:var(--card); border-radius:20px; padding:18px; margin-bottom:14px; box-shadow:0 6px 20px rgba(150,120,140,.09);}
+  .q{font-size:15px; font-weight:800; margin:0 0 12px; line-height:1.45;}
+  .q .n{color:var(--pink-deep); margin-right:6px;}
+  .q small{display:block; font-weight:500; font-size:12px; color:var(--muted); margin-top:3px;}
+
+  .stars{display:flex; gap:6px; justify-content:center; font-size:38px; cursor:pointer; user-select:none;}
+  .stars span{color:#eccddb; transition:transform .1s;}
+  .stars span.on{color:#ffb13d;}
+  .stars span:active{transform:scale(1.2);}
+  .starlbl{text-align:center; font-size:12.5px; color:var(--pink-deep); font-weight:700; margin-top:8px; min-height:16px;}
+
+  .opts{display:flex; flex-direction:column; gap:8px;}
+  .opt{border:1.5px solid var(--line); background:#fff; border-radius:13px; padding:13px 15px; font:inherit; font-size:14.5px; font-weight:600; color:#6a5a62; cursor:pointer; text-align:left;}
+  .opt.on{border-color:var(--pink-deep); background:#fdeef4; color:var(--pink-deep); font-weight:800;}
+  .opt.run{position:relative;}
+
+  textarea{width:100%; border:1.5px solid var(--line); border-radius:13px; padding:12px 14px; font:inherit; font-size:15px; resize:none; outline:0; line-height:1.5;}
+  textarea:focus{border-color:var(--pink);}
+  input.name{width:100%; border:1.5px solid var(--line); border-radius:13px; padding:12px 14px; font:inherit; font-size:16px; outline:0;}
+  input.name:focus{border-color:var(--pink);}
+
+  .submit{width:100%; border:0; background:linear-gradient(90deg,var(--pink-deep),#d98cae); color:#fff; font:inherit; font-weight:800; font-size:16px; padding:16px; border-radius:16px; cursor:pointer; box-shadow:0 8px 20px rgba(226,109,146,.3); margin-top:4px;}
+  .submit:active{transform:translateY(1px);}
+  .foot{text-align:center; font-size:11px; color:#c2adb6; margin-top:16px; line-height:1.6;}
+
+  /* thank you */
+  .thanks{display:none; text-align:center; padding:20px 10px;}
+  .thanks.show{display:block;}
+  .thanks .big{font-size:60px; margin-bottom:8px;}
+  .thanks h2{font-size:22px; margin:0 0 10px; color:var(--pink-deep);}
+  .thanks p{font-size:14px; color:#7a6670; line-height:1.6;}
+  .confetti{font-size:26px; letter-spacing:6px; margin-top:14px;}
+
+  /* result mode */
+  .res-item{background:#fff; border-radius:14px; padding:14px; margin-bottom:10px; box-shadow:0 3px 12px rgba(150,120,140,.08);}
+  .res-item .rn{font-size:12px; color:var(--muted); margin-bottom:6px;}
+  .res-item .ra{font-size:14px; margin:5px 0; line-height:1.5;}
+  .res-item .ra b{color:var(--pink-deep);}
+  .avg{background:#fff; border-radius:16px; padding:16px; margin-bottom:14px; box-shadow:0 4px 14px rgba(150,120,140,.09);}
+  .avg .at{font-size:14px; display:flex; justify-content:space-between; padding:5px 0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===== 설문 ===== -->
+  <div id="surveyView">
+    <div class="hero">
+      <div class="brand">🏝️ JIYOUNG TOUR · 지영투어</div>
+      <h1>고객만족도 설문조사</h1>
+      <p>소중한 고객님, 이번 <b>보홀 4박 6일</b> 여행은<br>어떠셨나요? 솔직한 후기 부탁드려요 💗</p>
+      <div class="stamp">VIP 단골 고객 전용</div>
+    </div>
+
+    <div id="questions"></div>
+
+    <div class="card">
+      <div class="q"><span class="n">✍️</span>고객명</div>
+      <input type="text" class="name" id="custName" value="정용" placeholder="성함을 적어주세요">
+    </div>
+
+    <button class="submit" id="submitBtn">설문 제출하기 💌</button>
+    <div class="foot">지영투어(대표: 지영) · 담당 가이드 지영<br>본 설문은 사랑을 목적으로 수집됩니다 💗</div>
+  </div>
+
+  <!-- ===== 제출 완료 ===== -->
+  <div class="thanks" id="thanksView">
+    <div class="big">💗</div>
+    <h2>제출 완료!</h2>
+    <p>지영투어를 이용해주셔서 감사합니다.<br><b>평생 단골 고객</b>으로 등록되었어요 ㅎㅎ<br>다음 여행도 지영이랑 가요 🏝️</p>
+    <div class="confetti">🎉 🌴 🐬 🍹 💗</div>
+  </div>
+
+  <!-- ===== 결과(관리자) ===== -->
+  <div id="resultView" style="display:none">
+    <div class="hero"><div class="brand">🔒 지영투어 관리자</div><h1>설문 결과</h1><p id="resCount">불러오는 중…</p></div>
+    <div id="resultBox"></div>
+  </div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDerROVp0gBbuClRdhNAn42uv1FjnoaOKQ",
+  authDomain: "young-94e97.firebaseapp.com",
+  databaseURL: "https://young-94e97-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "young-94e97",
+  storageBucket: "young-94e97.firebasestorage.app",
+  messagingSenderId: "320869908269",
+  appId: "1:320869908269:web:9a204ef6ae3423e81e5da4",
+};
+const ROOT = "couple";
+let db=null;
+try{ firebase.initializeApp(firebaseConfig); db=firebase.database(); }catch(e){}
+
+const esc=s=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* 질문 정의 */
+const STAR_LABELS=["","별로였어요…🥲","음~ 그럭저럭","좋았어요!","완전 만족!","인생 여행 💯"];
+const QUESTIONS=[
+  {id:"guide", type:"star", q:"담당 가이드(지영)의 친절도는?", sub:"※ 낮은 별점은 가이드가 삐집니다 🥲"},
+  {id:"stay",  type:"star", q:"숙소·동선 배정은 만족스러우셨나요?"},
+  {id:"food",  type:"star", q:"맛집·먹거리 선정은 어떠셨어요?"},
+  {id:"total", type:"star", q:"종합 만족도를 매겨주세요!"},
+  {id:"best",  type:"choice", q:"가장 좋았던 순간은?", opts:["🍫 초콜릿힐·시골투어","🐬 호핑·바다 액티비티","🏖️ 리조트에서 뒹굴뒹굴","🍽️ 맛집 털기","💗 그냥 지영이랑 있어서"]},
+  {id:"again", type:"choice", q:"지영투어를 다시 이용하시겠어요?", opts:["네, 평생 이용할게요 💗","다음 여행도 무조건 지영투어","가이드가 예뻐서 또 갈래요","음… 생각 좀 해볼…게(장난입니다)"]},
+  {id:"msg",   type:"text", q:"가이드에게 한마디 남겨주세요 ✍️", ph:"고객님의 따뜻한 한마디…"},
+  {id:"next",  type:"text", q:"다음 여행지 신청받습니다 ✈️", ph:"다음엔 어디 가고 싶어요?"},
+];
+const answers={};
+
+function renderQuestions(){
+  const box=document.getElementById("questions"); let n=0;
+  QUESTIONS.forEach(item=>{
+    n++;
+    const card=document.createElement("div"); card.className="card";
+    const qh=document.createElement("div"); qh.className="q";
+    qh.innerHTML='<span class="n">Q'+n+'.</span>'+esc(item.q)+(item.sub?'<small>'+esc(item.sub)+'</small>':"");
+    card.appendChild(qh);
+    if(item.type==="star"){
+      const st=document.createElement("div"); st.className="stars";
+      const lbl=document.createElement("div"); lbl.className="starlbl";
+      function paint(v){ [...st.children].forEach((s,i)=>s.classList.toggle("on", i<v)); lbl.textContent=v?STAR_LABELS[v]:""; }
+      for(let i=1;i<=5;i++){ const s=document.createElement("span"); s.textContent="★"; s.onclick=()=>{ answers[item.id]=i; paint(i); }; st.appendChild(s); }
+      card.appendChild(st); card.appendChild(lbl);
+    } else if(item.type==="choice"){
+      const wrap=document.createElement("div"); wrap.className="opts";
+      item.opts.forEach(o=>{ const b=document.createElement("button"); b.className="opt"; b.textContent=o;
+        b.onclick=()=>{ answers[item.id]=o; [...wrap.children].forEach(c=>c.classList.remove("on")); b.classList.add("on"); };
+        wrap.appendChild(b); });
+      card.appendChild(wrap);
+    } else {
+      const ta=document.createElement("textarea"); ta.rows=3; ta.placeholder=item.ph||"";
+      ta.oninput=()=>{ answers[item.id]=ta.value; }; card.appendChild(ta);
+    }
+    box.appendChild(card);
+  });
+}
+
+function submit(){
+  const stars=QUESTIONS.filter(q=>q.type==="star");
+  const missing=stars.filter(q=>!answers[q.id]);
+  if(missing.length){ alert("별점 질문에 모두 응답해 주세요! ⭐"); window.scrollTo({top:0,behavior:"smooth"}); return; }
+  const rec={ name:(document.getElementById("custName").value.trim()||"익명 고객"), a:answers, t:Date.now() };
+  if(db){ db.ref(ROOT+"/tourSurvey").push(rec); }
+  document.getElementById("surveyView").style.display="none";
+  document.getElementById("thanksView").classList.add("show");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ===== 결과 모드 (#result) ===== */
+function renderResult(){
+  document.getElementById("surveyView").style.display="none";
+  document.getElementById("resultView").style.display="block";
+  if(!db){ document.getElementById("resCount").textContent="연결 실패"; return; }
+  db.ref(ROOT+"/tourSurvey").on("value",s=>{
+    const v=s.val()||{}; const list=Object.keys(v).map(k=>v[k]).sort((a,b)=>(b.t||0)-(a.t||0));
+    document.getElementById("resCount").textContent = list.length? (list.length+"건의 응답이 도착했어요 💗") : "아직 응답이 없어요";
+    const box=document.getElementById("resultBox"); box.innerHTML="";
+    if(!list.length) return;
+    /* 평균 별점 */
+    const avg=document.createElement("div"); avg.className="avg";
+    QUESTIONS.filter(q=>q.type==="star").forEach(q=>{
+      const vals=list.map(r=>r.a&&r.a[q.id]).filter(Boolean); const m=vals.length?(vals.reduce((a,b)=>a+b,0)/vals.length):0;
+      const row=document.createElement("div"); row.className="at";
+      row.innerHTML='<span>'+esc(q.q)+'</span><span style="color:#ffb13d;font-weight:800">'+"★".repeat(Math.round(m))+' '+m.toFixed(1)+'</span>';
+      avg.appendChild(row);
+    });
+    box.appendChild(avg);
+    /* 개별 응답 */
+    list.forEach(r=>{
+      const d=new Date(r.t||0); const c=document.createElement("div"); c.className="res-item";
+      let html='<div class="rn">'+esc(r.name||"익명")+' · '+(d.getMonth()+1)+"/"+d.getDate()+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")+'</div>';
+      QUESTIONS.forEach(q=>{ const val=r.a&&r.a[q.id]; if(val===undefined||val==="") return;
+        const show = q.type==="star" ? ("★".repeat(val)+" ("+val+")") : esc(String(val));
+        html+='<div class="ra"><b>'+esc(q.q)+'</b><br>'+show+'</div>';
+      });
+      c.innerHTML=html; box.appendChild(c);
+    });
+  });
+}
+
+/* ===== 시작 ===== */
+if(location.hash==="#result" || location.search.indexOf("result")>=0){
+  renderResult();
+} else {
+  renderQuestions();
+  document.getElementById("submitBtn").onclick=submit;
+}
+</script>
+</body>
+</html>
