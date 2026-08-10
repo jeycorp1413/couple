@@ -50,7 +50,7 @@
   .trip-empty{font-size:12.5px; color:var(--muted); background:#fbf4f8; border-radius:12px; padding:12px 13px; text-align:center; line-height:1.6;}
 
   /* dday hero — 사진 배경 + 반투명 카드 + 하트 */
-  .hero{position:relative; background:#f4c6cb url('haesung-hero.jpg?v=1') left center/auto 140% no-repeat; border-radius:26px; min-height:262px; padding:0; display:flex; align-items:center; justify-content:center; text-align:center; margin-bottom:18px; overflow:hidden; box-shadow:0 10px 34px rgba(226,109,146,.16);}
+  .hero{position:relative; background:#f2d6d4 url('haesung-hero.png?v=2') -15px bottom/auto 135% no-repeat; border-radius:26px; min-height:262px; padding:0 22px 0 0; display:flex; align-items:center; justify-content:flex-end; text-align:center; margin-bottom:18px; overflow:hidden; box-shadow:0 10px 34px rgba(226,109,146,.16);}
   .hero .frost{position:relative; z-index:2; background:rgba(255,255,255,.40); -webkit-backdrop-filter:blur(5px); backdrop-filter:blur(5px); border-radius:15px; padding:8px 20px; box-shadow:0 5px 15px rgba(80,60,90,.12);}
   .hero .lbl{font-size:11px; color:#5d4a55; font-weight:800; letter-spacing:.2px;}
   .hero .lbl i{color:var(--pink-deep); font-style:normal; margin:0 3px;}
@@ -503,20 +503,6 @@
     </div>
   </div>
 
-  <!-- 지난 여행 추억 -->
-  <div class="card">
-    <div class="sec-title fold-head" id="tripMemHead">🌴 지난 여행 추억 <span class="fold" id="tripMemFold">▸</span></div>
-    <div id="tripMemBody" style="display:none">
-      <div class="trip-grp">🗓️ 다녀온 여행</div>
-      <a class="trip-item" href="trip-bohol.html">
-        <span class="ti-emoji">🏝️</span>
-        <span class="ti-tx"><b>보홀 4박 6일 💗</b><span class="ti-sub">2026.07.27 ~ 08.01</span></span>
-        <span class="ti-go">›</span>
-      </a>
-      <div class="trip-grp">✈️ 앞으로 갈 여행</div>
-      <div class="trip-empty">다음 여행 계획이 생기면 여기에 추가할게요 ✈️💕</div>
-    </div>
-  </div>
 </div>
 
 <!-- day modal -->
@@ -1487,7 +1473,7 @@ document.getElementById("lbDel").onclick=()=>{ if(db&&lbId) db.ref(ROOT+"/photos
 document.getElementById("lbOv").onclick=e=>{ if(e.target.id==="lbOv") document.getElementById("lbOv").classList.remove("open"); };
 document.getElementById("photoHead").onclick=()=>{ photoOpen=!photoOpen; document.getElementById("photoList").style.display=photoOpen?"":"none"; document.getElementById("photoFold").textContent=photoOpen?"▾":"▸"; };
 /* 할일·위시·마음전하기·한마디 접기/펼치기 */
-[["todoHead","todoBody","todoFold"],["wishHead","wishBody","wishFold"],["mkHead","mkBody","mkFold"],["memoHead","memoBody","memoFold"],["tripMemHead","tripMemBody","tripMemFold"]].forEach(([h,b,f])=>{
+[["todoHead","todoBody","todoFold"],["wishHead","wishBody","wishFold"],["mkHead","mkBody","mkFold"],["memoHead","memoBody","memoFold"]].forEach(([h,b,f])=>{
   let open=false;
   document.getElementById(h).onclick=()=>{ open=!open; document.getElementById(b).style.display=open?"":"none"; document.getElementById(f).textContent=open?"▾":"▸"; };
 });
@@ -1531,9 +1517,7 @@ start();
   }); }, {threshold:0.12, rootMargin:"0px 0px -8% 0px"});
   conts.forEach(c=>io.observe(c));
 })();
-</script>
-<script src="push.js?v=3"></script>
-<script>
+</script><script>
 /* ---- 꾸미기 효과 모음: 떠다니는 하트 · 밤 모드 · 탭 팡 · 기념일 폭죽 · 접속 반짝 ---- */
 (function(){
   const reduce=window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
