@@ -448,6 +448,16 @@
   .glassbar .gb-title b{ color:var(--pink-deep); }
   @media (prefers-reduced-transparency: reduce){ .glassbar{ background:var(--bg); -webkit-backdrop-filter:none; backdrop-filter:none; } }
   @media (prefers-reduced-motion: reduce){ .sheetov.open .modal{ animation:none; } .glassbar{ transition:opacity .2s ease; transform:none; } }
+
+  /* ===== 달력: 칩 → 색점 (애플 클린) ===== */
+  #calGrid .cell{ min-height:50px; background:transparent; border:0; padding:4px 0 3px; display:flex; flex-direction:column; align-items:center; gap:1px; }
+  #calGrid .cell.today{ background:transparent; border:0; }
+  #calGrid .cell .dn{ display:flex; align-items:center; justify-content:center; width:27px; height:27px; border-radius:50%; font-size:13px; font-weight:600; margin:0; }
+  #calGrid .cell.today .dn{ background:var(--pink-deep); color:#fff; }
+  #calGrid .cell .holname{ font-size:8.5px; line-height:1.1; }
+  #calGrid .cell .cdots{ display:flex; justify-content:center; gap:3px; margin-top:2px; min-height:5px; }
+  #calGrid .cell .cdots i{ width:5px; height:5px; border-radius:50%; display:block; }
+  #calGrid .cell .ev, #calGrid .cell .more{ display:none; }
 </style>
 </head>
 <body>
@@ -765,9 +775,9 @@ function renderCal(){
     const evs=byDate[ds]||[];
     let html='<div class="dn'+red+(hn?" hol":"")+'">'+d+'</div>';
     if(hn) html+='<div class="holname">'+esc(hn)+'</div>';
-    const lim=hn?2:3;
-    evs.slice(0,lim).forEach(e=>{ html+='<div class="ev" style="background:'+(COL[e.who]||COL.a)+'">'+esc(catShort(e))+'</div>'; });
-    if(evs.length>lim) html+='<div class="more">+'+(evs.length-lim)+'</div>';
+    if(evs.length){ html+='<div class="cdots">';
+      evs.slice(0,4).forEach(e=>{ html+='<i style="background:'+(COL[e.who]||COL.a)+'"></i>'; });
+      html+='</div>'; }
     cell.innerHTML=html;
     cell.onclick=()=>openDay(ds);
     grid.appendChild(cell);
