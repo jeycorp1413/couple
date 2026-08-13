@@ -429,6 +429,25 @@
     button,.cell,.todo .chk,.del{ transition:none; }
     button:active,.cell:active,.fold-head:active,.who button:active,.catbtn:active,.subbtn:active,.add:active,.mini-add:active,.cal-nav:active,.gear:active,.todo .chk:active,.del:active,.anniv .ax:active{ transform:none; }
   }
+
+  /* ===== Apple 인터랙션: 바텀시트 · 유리 헤더 · 스와이프 ===== */
+  .ov.sheetov{ align-items:flex-end; justify-content:center; padding:0; }
+  .sheetov .modal{ border-radius:26px 26px 0 0; max-width:500px; width:100%; max-height:92vh; padding-top:6px; box-shadow:0 -12px 44px rgba(80,50,70,.24); will-change:transform; }
+  .sheetov.open .modal{ animation:sheetUp .42s cubic-bezier(.22,1,.36,1); }
+  @keyframes sheetUp{ from{ transform:translateY(100%); } to{ transform:translateY(0); } }
+  .sheet-grip{ width:40px; height:5px; border-radius:3px; background:#e6cfda; margin:6px auto 12px; flex:none; cursor:grab; touch-action:none; }
+  .sheet-grip:active{ cursor:grabbing; background:#d9bccb; }
+  #calGrid{ touch-action:pan-y; }
+  .glassbar{ position:fixed; top:0; left:0; right:0; z-index:60; display:flex; align-items:center; justify-content:center; gap:8px;
+    padding:calc(9px + env(safe-area-inset-top)) 18px 9px; background:rgba(255,247,251,.66);
+    -webkit-backdrop-filter:blur(22px) saturate(180%); backdrop-filter:blur(22px) saturate(180%);
+    border-bottom:1px solid rgba(226,109,146,.10); transform:translateY(-101%); opacity:0;
+    transition:transform .38s cubic-bezier(.22,1,.36,1), opacity .3s ease; pointer-events:none; }
+  .glassbar.show{ transform:translateY(0); opacity:1; }
+  .glassbar .gb-title{ font-weight:800; font-size:14.5px; color:var(--ink); letter-spacing:-.01em; white-space:nowrap; }
+  .glassbar .gb-title b{ color:var(--pink-deep); }
+  @media (prefers-reduced-transparency: reduce){ .glassbar{ background:var(--bg); -webkit-backdrop-filter:none; backdrop-filter:none; } }
+  @media (prefers-reduced-motion: reduce){ .sheetov.open .modal{ animation:none; } .glassbar{ transition:opacity .2s ease; transform:none; } }
 </style>
 </head>
 <body>
@@ -1548,6 +1567,67 @@ start();
     if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); }
   }); }, {threshold:0.12, rootMargin:"0px 0px -8% 0px"});
   conts.forEach(c=>io.observe(c));
+})();
+
+/* ===== Apple 인터랙션 : 바텀시트 드래그 · 달력 스와이프(관성) · 스크롤 유리헤더 ===== */
+(function(){
+  function spring(from,to,v0,onU,onD){ var x=from,v=v0||0,k=170,c=26,last=performance.now(),raf;
+    function step(t){ var dt=(t-last)/1000; if(dt>0.032)dt=0.032; last=t; var a=-k*(x-to)-c*v; v+=a*dt; x+=v*dt; onU(x);
+      if(Math.abs(x-to)<0.4 && Math.abs(v)<8){ onU(to); if(onD)onD(); return; } raf=requestAnimationFrame(step); }
+    raf=requestAnimationFrame(step); return function(){ cancelAnimationFrame(raf); }; }
+
+  /* 1) 바텀시트 — 그립을 아래로 끌면 속도 실어 닫힘, 살짝이면 스프링 복귀 */
+  ["dayOv","setOv","annivOv"].forEach(function(id){
+    var ov=document.getElementById(id); if(!ov) return; var modal=ov.querySelector(".modal"); if(!modal) return;
+    ov.classList.add("sheetov");
+    var grip=document.createElement("div"); grip.className="sheet-grip"; modal.insertBefore(grip, modal.firstChild);
+    var drag=false, sy=0, cy=0, ly=0, lt=0, vel=0, stop=null;
+    function setY(y){ cy=y; modal.style.transform="translateY("+Math.max(0,y)+"px)"; }
+    function doClose(){ if(stop)stop(); var h=modal.offsetHeight+60; stop=spring(cy,h,vel,setY,function(){ ov.classList.remove("open"); modal.style.transform=""; modal.style.transition=""; cy=0; }); }
+    function doReset(){ if(stop)stop(); stop=spring(cy,0,vel,setY,function(){ modal.style.transform=""; }); }
+    grip.addEventListener("pointerdown",function(e){ drag=true; sy=e.clientY; cy=0; ly=e.clientY; lt=performance.now(); vel=0; if(stop)stop(); modal.style.transition="none"; try{grip.setPointerCapture(e.pointerId);}catch(_){} });
+    grip.addEventListener("pointermove",function(e){ if(!drag) return; var dy=e.clientY-sy; if(dy<0) dy*=0.28; setY(dy); var now=performance.now(),d=(now-lt)/1000; if(d>0){ vel=(e.clientY-ly)/d; ly=e.clientY; lt=now; } });
+    function endDrag(){ if(!drag) return; drag=false; var h=modal.offsetHeight; var proj=cy+vel*0.14; if(proj>h*0.3 || vel>700){ doClose(); } else { doReset(); } }
+    grip.addEventListener("pointerup",endDrag); grip.addEventListener("pointercancel",endDrag);
+  });
+
+  /* 2) 달력 스와이프 — 좌우로 밀면 월 전환, 슬라이드 애니메이션 */
+  var grid=document.getElementById("calGrid");
+  if(grid && typeof renderCal==="function"){
+    function slideMonth(dir){
+      grid.style.transition="transform .16s ease, opacity .16s ease";
+      grid.style.transform="translateX("+(dir>0?-36:36)+"px)"; grid.style.opacity="0";
+      setTimeout(function(){
+        if(dir>0){ viewM++; if(viewM>11){viewM=0;viewY++;} } else { viewM--; if(viewM<0){viewM=11;viewY--;} }
+        renderCal();
+        var g=document.getElementById("calGrid");
+        g.style.transition="none"; g.style.transform="translateX("+(dir>0?36:-36)+"px)"; g.style.opacity="0";
+        requestAnimationFrame(function(){ g.style.transition="transform .3s cubic-bezier(.22,1,.36,1), opacity .28s ease"; g.style.transform="translateX(0)"; g.style.opacity="1"; });
+      },140);
+    }
+    var x0=0,y0=0,on=false,sw=false,sv=0,lx=0,lt=0;
+    grid.addEventListener("pointerdown",function(e){ on=true; sw=false; x0=e.clientX; y0=e.clientY; lx=e.clientX; lt=performance.now(); });
+    grid.addEventListener("pointermove",function(e){ if(!on) return; var dx=e.clientX-x0, dy=e.clientY-y0;
+      if(!sw && Math.abs(dx)>14 && Math.abs(dx)>Math.abs(dy)*1.2){ sw=true; try{grid.setPointerCapture(e.pointerId);}catch(_){} }
+      if(sw){ var now=performance.now(),d=(now-lt)/1000; if(d>0){ sv=(e.clientX-lx)/d; lx=e.clientX; lt=now; } } });
+    function endSw(e){ if(!on) return; on=false; if(!sw) return; var dx=(e.clientX||lx)-x0; var dir=(dx<0||sv<-450)?1:-1; slideMonth(dir); }
+    grid.addEventListener("pointerup",endSw); grid.addEventListener("pointercancel",function(){on=false;});
+    grid.addEventListener("click",function(e){ if(sw){ e.stopPropagation(); e.preventDefault(); sw=false; } },true);
+    var pv=document.getElementById("prevM"), nx=document.getElementById("nextM");
+    if(pv) pv.onclick=function(){ slideMonth(-1); };
+    if(nx) nx.onclick=function(){ slideMonth(1); };
+  }
+
+  /* 3) 스크롤 시 유리 헤더 (히어로가 사라지면 나타남) */
+  var bar=document.createElement("div"); bar.className="glassbar"; bar.innerHTML='<span class="gb-title"></span>';
+  document.body.insertBefore(bar, document.body.firstChild);
+  var gt=bar.querySelector(".gb-title");
+  function updBar(){ try{ var big=document.getElementById("heroBig"); var nm=(typeof SET!=="undefined")?(SET.b+" 💗 "+SET.a):"우리 캘린더"; gt.innerHTML=esc(nm)+(big?' · <b>'+esc(big.textContent)+'</b>':''); }catch(_){ } }
+  var ticking=false;
+  window.addEventListener("scroll",function(){ if(ticking) return; ticking=true; requestAnimationFrame(function(){ ticking=false;
+    var hero=document.querySelector(".hero"); var b=hero?hero.getBoundingClientRect().bottom:300;
+    if(b<44){ if(!bar.classList.contains("show")){ updBar(); bar.classList.add("show"); } } else { bar.classList.remove("show"); }
+  }); },{passive:true});
 })();
 </script>
 <script src="push.js?v=3"></script>
