@@ -411,6 +411,24 @@
     background:#fff; color:var(--pink-deep); border-radius:999px; padding:11px 20px; font-weight:800; font-size:14.5px;
     box-shadow:0 8px 30px rgba(226,109,146,.4); white-space:nowrap; animation:celebIn .5s cubic-bezier(.34,1.56,.64,1);}
   @keyframes celebIn{from{transform:translateX(-50%) translateY(-26px) scale(.8); opacity:0;} to{transform:translateX(-50%); opacity:1;}}
+
+  /* ===== Apple-style polish : 즉각 반응 · 유리 재질 · 광학 타이포 ===== */
+  :root{ --ease-ios:cubic-bezier(.22,1,.36,1); }
+  button,.cell,.todo .chk,.del{ transition:transform .14s var(--ease-ios), background-color .2s ease, box-shadow .25s var(--ease-ios), opacity .15s ease; }
+  /* 누르는 즉시(pointer-down) 살짝 눌리는 물리적 반응 */
+  button:active,.fold-head:active{ transform:scale(.955); }
+  .cell:active{ transform:scale(.97); }
+  .who button:active,.catbtn:active,.subbtn:active,.add:active,.mini-add:active,.cal-nav:active,.gear:active,.todo .chk:active,.del:active,.anniv .ax:active{ transform:scale(.9); }
+  /* 광학 타이포: 큰 글자는 트래킹을 좁게, 본문은 0 근처 (Apple 규칙) */
+  .hero .big{ letter-spacing:-.03em; }
+  .top h1,.sec-title,.cal-head .mtitle,.modal h3{ letter-spacing:-.015em; }
+  /* 떠 있는 컨트롤 = 반투명 유리 재질 (backdrop blur) */
+  .gear{ background:rgba(255,255,255,.62); -webkit-backdrop-filter:blur(16px) saturate(170%); backdrop-filter:blur(16px) saturate(170%); border:1px solid rgba(255,255,255,.55); box-shadow:0 4px 16px rgba(120,90,110,.12); }
+  @media (prefers-reduced-transparency: reduce){ .gear{ background:#fff; -webkit-backdrop-filter:none; backdrop-filter:none; } }
+  @media (prefers-reduced-motion: reduce){
+    button,.cell,.todo .chk,.del{ transition:none; }
+    button:active,.cell:active,.fold-head:active,.who button:active,.catbtn:active,.subbtn:active,.add:active,.mini-add:active,.cal-nav:active,.gear:active,.todo .chk:active,.del:active,.anniv .ax:active{ transform:none; }
+  }
 </style>
 </head>
 <body>
