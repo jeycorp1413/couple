@@ -31,11 +31,11 @@
   .wrap{max-width:480px; margin:0 auto;
     padding:calc(16px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(40px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));}
 
-  /* header */
-  .top{display:flex; align-items:center; justify-content:flex-end; gap:10px; margin-bottom:6px;}
-  .top h1{display:none;}
-  .top h1 .h{color:var(--pink-deep);} .top h1 .y{color:var(--blue-deep);}
-  .gear{border:1.5px solid var(--line); background:#fff; border-radius:50%; width:40px; height:40px; cursor:pointer; font-size:17px; flex:none;}
+  /* header — 인스타 상단바: 볼드 핸들 + 얇은 헤어라인 */
+  .top{display:flex; align-items:center; justify-content:space-between; gap:10px; margin:0 -16px 10px; padding:11px 16px 12px; border-bottom:1px solid var(--line);}
+  .top h1{display:block; margin:0; font-size:16.5px; font-weight:800; letter-spacing:-.02em;}
+  .top h1 .h{color:var(--ink);} .top h1 .y{color:var(--ink);}
+  .gear{border:0; background:none; color:var(--ink); border-radius:50%; width:34px; height:34px; cursor:pointer; font-size:17px; flex:none;}
   .live{display:none;}
   .trip-grp{font-size:12px; font-weight:800; color:var(--muted); margin:12px 2px 7px;}
   .trip-grp:first-child{margin-top:2px;}
@@ -68,14 +68,16 @@
   .hero .fh8{left:92%; font-size:13px; animation-delay:3.0s; animation-duration:6.0s;}
   @media(prefers-reduced-motion:reduce){.hero .fh{display:none;}}
 
-  .card{background:var(--card); border-radius:22px; padding:19px; margin-bottom:20px; box-shadow:0 8px 28px rgba(150,120,140,.10);}
+  .card{background:var(--card); border-radius:18px; padding:19px; margin-bottom:16px; border:1px solid var(--line); box-shadow:none;}
   .sec-title{font-weight:800; font-size:18px; margin:0 0 13px; letter-spacing:-.2px; display:flex; align-items:center; gap:7px;}
   .mini-add{margin-left:auto; border:1.5px solid var(--pink); background:#fff; color:var(--pink-deep); font:inherit; font-size:12.5px; font-weight:700; border-radius:999px; padding:5px 12px; cursor:pointer;}
-  .anniv{display:flex; align-items:center; gap:10px; padding:10px 2px; border-bottom:1px solid #f6ecf2;}
-  .anniv:last-child{border-bottom:0;}
-  .anniv .al{flex:1; font-size:15.5px; font-weight:600;}
-  .anniv .al small{font-weight:400; color:#b6a3ae; font-size:12px;}
-  .anniv .ad{font-size:15px; font-weight:800; color:var(--pink-deep); white-space:nowrap;}
+  .anniv{display:flex; align-items:center; gap:11px; padding:11px 2px;}
+  .anniv .av{width:38px; height:38px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; font-size:17px; color:#fff;}
+  .anniv .al{flex:1; font-size:15px; font-weight:700; min-width:0;}
+  .anniv .al small{display:block; font-weight:600; color:var(--muted); font-size:11.5px; margin-top:1px;}
+  .anniv .adwrap{display:flex; flex-direction:column; align-items:flex-end; gap:1px;}
+  .anniv .ad{font-size:14.5px; font-weight:800; color:var(--pink-deep); white-space:nowrap;}
+  .anniv .heart{font-size:11px; color:#ED4956;}
   .anniv .ax{border:0; background:none; color:#d6bcc8; cursor:pointer; font-size:14px;}
   .chkrow{display:flex !important; align-items:center; gap:8px; font-size:13.5px; color:#7a6670; margin-top:14px;}
   .chkrow input{width:18px; height:18px;}
@@ -353,7 +355,7 @@
     background:linear-gradient(170deg,#12142a 0%,#1d1738 100%);
   }
   body.night .gear{background:#262940; border-color:#3c3f5a; color:#e8e3ff;}
-  body.night .card{box-shadow:0 8px 28px rgba(8,6,22,.5);}
+  body.night .card{border-color:#34374f;}
   body.night .hero .frost{background:rgba(22,20,44,.5);}
   body.night .hero .lbl{color:#ded4e6;}
   body.night .mini-add, body.night .who button, body.night .catbtn, body.night .subbtn,
@@ -422,9 +424,7 @@
   /* 광학 타이포: 큰 글자는 트래킹을 좁게, 본문은 0 근처 (Apple 규칙) */
   .hero .big{ letter-spacing:-.03em; }
   .top h1,.sec-title,.cal-head .mtitle,.modal h3{ letter-spacing:-.015em; }
-  /* 떠 있는 컨트롤 = 반투명 유리 재질 (backdrop blur) */
-  .gear{ background:rgba(255,255,255,.62); -webkit-backdrop-filter:blur(16px) saturate(170%); backdrop-filter:blur(16px) saturate(170%); border:1px solid rgba(255,255,255,.55); box-shadow:0 4px 16px rgba(120,90,110,.12); }
-  @media (prefers-reduced-transparency: reduce){ .gear{ background:#fff; -webkit-backdrop-filter:none; backdrop-filter:none; } }
+  .gear:active{ background:var(--bg2,rgba(0,0,0,.05)); }
   @media (prefers-reduced-motion: reduce){
     button,.cell,.todo .chk,.del{ transition:none; }
     button:active,.cell:active,.fold-head:active,.who button:active,.catbtn:active,.subbtn:active,.add:active,.mini-add:active,.cal-nav:active,.gear:active,.todo .chk:active,.del:active,.anniv .ax:active{ transform:none; }
@@ -1354,6 +1354,8 @@ function annivNext(a){
   if(a.yearly && midnight(next)<today) next=new Date(today.getFullYear()+1, base.getMonth(), base.getDate());
   return {next:midnight(next), left:Math.round((midnight(next)-today)/DAY)};
 }
+const ANNIV_CHIPS=["#ED4956","#D62976","#962FBF","#4F5BD5","#FA7E1E"];
+function annivIcon(label){ return /생일/.test(label)?"🎂":(/여행/.test(label)?"🏝️":(/주년|사랑/.test(label)?"💗":"💍")); }
 function renderAnnivs(){
   const box=document.getElementById("annivList");
   box.innerHTML="";
@@ -1361,15 +1363,16 @@ function renderAnnivs(){
   const base=parseD(SET.anniv), nx=annivNext({date:SET.anniv, yearly:true});
   const pin=document.createElement("div"); pin.className="anniv pinned";
   const pdd=nx.left===0?"오늘🎉":"D-"+nx.left;
-  pin.innerHTML='<span class="al">사랑한지 💗 <small>'+(base.getMonth()+1)+"."+base.getDate()+' · 매년</small></span><span class="ad">'+pdd+'</span>';
+  pin.innerHTML='<span class="av" style="background:'+ANNIV_CHIPS[0]+'">💗</span><span class="al">사랑한지<small>'+(base.getMonth()+1)+"."+base.getDate()+' · 매년</small></span><span class="adwrap"><span class="ad">'+pdd+'</span><span class="heart">♥</span></span>';
   box.appendChild(pin);
   /* 마일스톤(가까운 4개) + 등록 기념일 → 디데이 빠른 순 */
-  const marks=upcomingMarks(4).map(m=>({label:m.label+" 💗", next:m.date, left:m.left, milestone:true}));
+  const marks=upcomingMarks(4).map(m=>({label:m.label, next:m.date, left:m.left, milestone:true}));
   const arr=ANNIVS.map(a=>Object.assign({},a,annivNext(a))).filter(a=>a.yearly||a.left>=0);
   const all=marks.concat(arr).sort((x,y)=>x.left-y.left);
-  all.forEach(a=>{ const r=document.createElement("div"); r.className="anniv";
+  all.forEach((a,i)=>{ const r=document.createElement("div"); r.className="anniv";
     const dd=a.left===0?"오늘🎉":"D-"+a.left;
-    r.innerHTML='<span class="al">'+esc(a.label)+' <small>'+ymd(a.next).slice(5).replace("-",".")+(a.yearly?" · 매년":"")+'</small></span><span class="ad">'+dd+'</span>';
+    const chip=ANNIV_CHIPS[i%ANNIV_CHIPS.length];
+    r.innerHTML='<span class="av" style="background:'+chip+'">'+annivIcon(a.label)+'</span><span class="al">'+esc(a.label)+'<small>'+ymd(a.next).slice(5).replace("-",".")+(a.yearly?" · 매년":"")+'</small></span><span class="adwrap"><span class="ad">'+dd+'</span><span class="heart">♥</span></span>';
     /* 삭제는 행 길게 누르기(0.6초) — ✕ 버튼 없이 열 정렬 유지 */
     if(!a.milestone){
       let ht=null;
