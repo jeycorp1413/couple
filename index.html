@@ -71,14 +71,10 @@
   .hero .sub{display:none;}
   .hero .fh{position:absolute; bottom:-18px; z-index:1; opacity:0; animation:heroRise 4.8s linear infinite; pointer-events:none;}
   @keyframes heroRise{0%{transform:translateY(0) scale(.7); opacity:0;} 14%{opacity:.9;} 100%{transform:translateY(-234px) scale(1.12); opacity:0;}}
-  .hero .fh1{left:7%;  font-size:15px; animation-delay:0s;   animation-duration:4.9s;}
-  .hero .fh2{left:19%; font-size:12px; animation-delay:1.9s; animation-duration:5.6s;}
-  .hero .fh3{left:31%; font-size:18px; animation-delay:3.3s; animation-duration:4.4s;}
-  .hero .fh4{left:44%; font-size:13px; animation-delay:.8s;  animation-duration:5.9s;}
-  .hero .fh5{left:57%; font-size:16px; animation-delay:2.5s; animation-duration:4.7s;}
-  .hero .fh6{left:69%; font-size:12px; animation-delay:4.0s; animation-duration:5.3s;}
-  .hero .fh7{left:81%; font-size:19px; animation-delay:1.3s; animation-duration:4.2s;}
-  .hero .fh8{left:92%; font-size:13px; animation-delay:3.0s; animation-duration:6.0s;}
+  .hero .fh1{left:12%; font-size:15px; animation-delay:0s;   animation-duration:4.9s;}
+  .hero .fh3{left:38%; font-size:18px; animation-delay:3.3s; animation-duration:4.4s;}
+  .hero .fh5{left:63%; font-size:16px; animation-delay:2.5s; animation-duration:4.7s;}
+  .hero .fh7{left:87%; font-size:19px; animation-delay:1.3s; animation-duration:4.2s;}
   @media(prefers-reduced-motion:reduce){.hero .fh{display:none;}}
 
   .card{background:var(--card); border-radius:18px; padding:19px; margin-bottom:16px; border:1px solid var(--line); box-shadow:none;}
@@ -511,8 +507,8 @@
   <div class="warn" id="warn"></div>
 
   <div class="hero">
-    <span class="fh fh1">💕</span><span class="fh fh2">💗</span><span class="fh fh3">🩷</span><span class="fh fh4">💓</span>
-    <span class="fh fh5">💕</span><span class="fh fh6">💗</span><span class="fh fh7">🩷</span><span class="fh fh8">💓</span>
+    <span class="fh fh1">💕</span><span class="fh fh3">🩷</span>
+    <span class="fh fh5">💕</span><span class="fh fh7">🩷</span>
     <div class="frost">
       <div class="lbl" id="heroLbl">우리가 함께한 지</div>
       <div class="big" id="heroBig">D+—</div>
@@ -1785,7 +1781,7 @@ start();
     const box=document.createElement("div"); box.id="hearts"; box.setAttribute("aria-hidden","true");
     document.body.appendChild(box);
     function spawn(){
-      if(document.hidden || box.childElementCount>=14) return;
+      if(document.hidden || box.childElementCount>=6) return;
       const EMO=NIGHT?nightEMO:dayEMO;
       const o=document.createElement("span"), i=document.createElement("i");
       const dur=7+Math.random()*5;
@@ -1798,8 +1794,8 @@ start();
       o.appendChild(i); box.appendChild(o);
       setTimeout(function(){ o.remove(); }, dur*1000+300);
     }
-    setInterval(spawn, 850);
-    for(let k=0;k<5;k++) setTimeout(spawn, k*350);
+    setInterval(spawn, 2000);
+    for(let k=0;k<2;k++) setTimeout(spawn, k*500);
   }
 
   /* 탭하면 하트 팡 */
