@@ -40,7 +40,6 @@
   .tabbar button{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
     border:0; background:none; color:var(--muted); font:inherit; font-size:9.5px; font-weight:700; padding:5px 0; cursor:pointer;}
   .tabbar button svg{width:23px; height:23px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linejoin:round; stroke-linecap:round;}
-  .tabbar button.add svg{stroke-width:2.1;}
   .tabbar button:active{color:var(--pink-deep);}
   @media (prefers-reduced-transparency: reduce){ .tabbar{background:var(--bg); -webkit-backdrop-filter:none; backdrop-filter:none;} }
   body.night .tabbar{background:rgba(18,20,42,.88); border-top-color:#34374f;}
@@ -613,9 +612,9 @@
 <!-- 하단 탭바 -->
 <nav class="tabbar" id="tabbar">
   <button id="tabHome" aria-label="홈"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v9h14v-9"/></svg>홈</button>
-  <button id="tabCal" aria-label="캘린더"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>캘린더</button>
-  <button id="tabAdd" class="add" aria-label="기념일 추가"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="M12 8v8M8 12h8"/></svg>추가</button>
-  <button id="tabPhoto" aria-label="데이트 사진"><svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>사진</button>
+  <button id="tabTodo" aria-label="함께 할 일"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>함께할일</button>
+  <button id="tabMemo" aria-label="우리의 한마디"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-4 4V5z"/></svg>한마디</button>
+  <button id="tabWish" aria-label="가고싶은 곳"><svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.8 6.2.6-4.7 4.2 1.4 6.2L12 16.9 6.5 19.8l1.4-6.2L3.2 9.4l6.2-.6L12 3z"/></svg>가고싶은곳</button>
   <button id="tabHeart" aria-label="마음 전하기"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.35-9.5-8.8C.6 8.4 2.6 5 6.2 5c2 0 3.4 1 5.8 3.4C14.4 6 15.8 5 17.8 5c3.6 0 5.6 3.4 3.7 7.2C19 16.65 12 21 12 21Z"/></svg>마음</button>
 </nav>
 
@@ -1650,9 +1649,9 @@ function openAndScroll(headId, bodyId){
   document.getElementById(headId).scrollIntoView({behavior:"smooth", block:"start"});
 }
 document.getElementById("tabHome").onclick=()=>window.scrollTo({top:0, behavior:"smooth"});
-document.getElementById("tabCal").onclick=()=>document.getElementById("calGrid").closest(".card").scrollIntoView({behavior:"smooth", block:"start"});
-document.getElementById("tabAdd").onclick=openAnniv;
-document.getElementById("tabPhoto").onclick=()=>openAndScroll("photoHead","photoList");
+document.getElementById("tabTodo").onclick=()=>openAndScroll("todoHead","todoBody");
+document.getElementById("tabMemo").onclick=()=>openAndScroll("memoHead","memoBody");
+document.getElementById("tabWish").onclick=()=>openAndScroll("wishHead","wishBody");
 document.getElementById("tabHeart").onclick=()=>openAndScroll("mkHead","mkBody");
 document.getElementById("gearBtn").onclick=openSet;
 document.getElementById("setClose").onclick=()=>document.getElementById("setOv").classList.remove("open");

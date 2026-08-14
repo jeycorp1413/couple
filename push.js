@@ -86,21 +86,6 @@
     }).catch(function () {});
   }
 
-  // ── "알림 켜기" 버튼 만들기 ────────────────────────
-  function makeButton() {
-    var perm = (typeof Notification !== "undefined") ? Notification.permission : "default";
-    var subscribed = (perm === "granted" && localStorage.getItem("pushKey"));
-    var btn = document.createElement("button");
-    btn.textContent = subscribed ? "🔔 알림 다시 켜기" : "🔔 알림 켜기";
-    btn.style.cssText =
-      "position:fixed;right:14px;bottom:16px;z-index:9999;border:0;border-radius:24px;" +
-      "padding:11px 16px;font-size:14px;font-weight:700;color:#fff;background:#e26d92;" +
-      "box-shadow:0 4px 14px rgba(226,109,146,.45);cursor:pointer;font-family:inherit;";
-    btn.onclick = function () { enablePush(); };
-    document.body.appendChild(btn);
-    window.__pushBtn = btn;
-  }
-
   // ── 알림 켜기 (반드시 버튼 탭에서 호출) ─────────────
   function enablePush() {
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
@@ -125,7 +110,6 @@
             updatedAt: Date.now(),
           });
           localStorage.setItem("pushKey", key);
-          if (window.__pushBtn) window.__pushBtn.textContent = "🔔 알림 다시 켜기";
           alert("알림이 켜졌어요! 💗 이제 서로 뭔가 등록하면 알림이 가요.\n(다른 한 명도 각자 폰에서 이 버튼을 눌러주세요)");
         });
       }).catch(function (e) {
@@ -156,7 +140,6 @@
   function start() {
     patchDb();
     registerSW();
-    makeButton();
   }
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", start);
