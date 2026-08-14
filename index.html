@@ -1409,6 +1409,15 @@ function addWish(){ const t=document.getElementById("wishText").value.trim(); if
 
 /* ---- 데이트 사진 ---- */
 function renderPhotos(){
+  /* 사진 목록을 다시 그릴 때(좋아요·사진추가·실시간 반영 등) 스크롤이 위로 튀는 것 방지 */
+  const sc=document.scrollingElement||document.documentElement;
+  const list=document.getElementById("photoList");
+  const open=list && getComputedStyle(list).display!=="none";
+  const keep=sc.scrollTop;
+  renderPhotosBuild();
+  if(open){ sc.scrollTop=keep; requestAnimationFrame(()=>{ sc.scrollTop=keep; }); }
+}
+function renderPhotosBuild(){
   const box=document.getElementById("photoList");
   const dateSet={};
   EVENTS.filter(e=>e.cat==="date").forEach(e=>{ dateSet[e.date]=true; });
@@ -1450,22 +1459,14 @@ function renderStories(){
   add.innerHTML='<div class="ring add"><div class="rin">＋</div></div><div class="slbl">추억 추가</div>';
   add.onclick=()=>{ const ph=document.getElementById("photoList"); if(ph && getComputedStyle(ph).display==="none") document.getElementById("photoHead").click(); document.getElementById("photoHead").scrollIntoView({behavior:"smooth",block:"start"}); };
   box.appendChild(add);
-  (PHOTOS||[]).slice().sort((a,b)=>(b.t||0)-(a.t||0)).slice(0,6).forEach(p=>{
-    const s=document.createElement("div"); s.className="story";
-    const md=p.date?((parseD(p.date).getMonth()+1)+"/"+parseD(p.date).getDate()):"사진";
+  const byd={};
+  (PHOTOS||[]).forEach(p=>{ if(!p.date) return; const cur=byd[p.date]; if(!cur || (p.t||0)>(cur.t||0)) byd[p.date]=p; });
+  Object.keys(byd).sort((a,b)=>a<b?1:-1).slice(0,8).forEach(ds=>{
+    const p=byd[ds]; const s=document.createElement("div"); s.className="story";
+    const md=(parseD(ds).getMonth()+1)+"/"+parseD(ds).getDate();
     s.innerHTML='<div class="ring"><div class="rin"><img src="'+p.img+'"></div></div><div class="slbl">'+md+'</div>';
     s.onclick=()=>openLb(p); box.appendChild(s);
   });
-  if(typeof annivNext==="function"){
-    (ANNIVS||[]).map(a=>Object.assign({},a,annivNext(a))).filter(a=>a.left>=0).sort((x,y)=>x.left-y.left).slice(0,3).forEach(a=>{
-      const s=document.createElement("div"); s.className="story";
-      const em=/생일/.test(a.label)?"🎂":(/여행|여행/.test(a.label)?"🏝️":"💕");
-      const lb=a.left===0?"오늘🎉":"D-"+a.left;
-      s.innerHTML='<div class="ring"><div class="rin">'+em+'</div></div><div class="slbl">'+lb+'</div>';
-      s.onclick=()=>document.getElementById("annivList").scrollIntoView({behavior:"smooth",block:"center"});
-      box.appendChild(s);
-    });
-  }
 }
 function compressImage(file, cb, opt){
   const MAX=(opt&&opt.max)||1600, Q=(opt&&opt.q)||0.85;
