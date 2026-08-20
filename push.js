@@ -5,8 +5,9 @@
    기존 코드는 건드리지 않아도 됩니다.
    ============================================================ */
 (function () {
-  // 1단계에서 만든 VAPID 공개키 (공개되어도 안전)
-  var VAPID_PUBLIC = "BF44yAoEEy2I3mvvE4jgAP6E31CImB3vkqTnf6HBS-moctl8QnDvuMMAPZ4URCgSbS1cz8Lb6Ap7deVSyB-9gMw";
+  // 1단계에서 만든 VAPID 공개키 (공개되어도 안전). 사이트별로 다른 키를 쓰려면
+  // 이 스크립트를 불러오기 전에 window.PUSH_VAPID_PUBLIC 을 지정하세요.
+  var VAPID_PUBLIC = (typeof window !== "undefined" && window.PUSH_VAPID_PUBLIC) || "BF44yAoEEy2I3mvvE4jgAP6E31CImB3vkqTnf6HBS-moctl8QnDvuMMAPZ4URCgSbS1cz8Lb6Ap7deVSyB-9gMw";
 
   var ROOT = (typeof window !== "undefined" && window.PUSH_ROOT) || "couple";
   var loadedAt = Date.now();

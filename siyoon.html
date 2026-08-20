@@ -680,6 +680,7 @@ const firebaseConfig = {
 };
 const ROOT = "siyoon";   /* 시윤♥지영 전용 공간 (정용♥지영과 분리) */
 window.PUSH_ROOT = ROOT; /* push.js가 같은 이름으로 알림 구독을 저장하도록 */
+window.PUSH_VAPID_PUBLIC = "BLdOLgnJ4oWchHiMfG6npxA5LXvnieSp8Nn76n-pCK8x8s6ELGCCSzQiN1nWSXJUs912nprZFcvO3NijCjcn1Yw"; /* 이 사이트 전용 VAPID 공개키 */
 const configured = firebaseConfig.apiKey.indexOf("AIza")===0;
 let db=null;
 
