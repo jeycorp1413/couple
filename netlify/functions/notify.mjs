@@ -5,6 +5,8 @@
 //  Netlify 환경변수 (딱 1개만 필수):
 //    VAPID_PRIVATE  ← 1단계에서 만든 Private Key (비공개! 코드에 안 넣음)
 //  (VAPID_PUBLIC / DB주소는 공개값이라 아래에 박아둠)
+//  같은 저장소를 다른 사이트가 함께 쓰는 경우, 그 사이트만의 키 쌍을 쓰려면
+//  Netlify 환경변수에 VAPID_PUBLIC / VAPID_PRIVATE 를 새로 지정하면 됩니다.
 // ───────────────────────────────────────────────────────────
 
 import webpush from 'web-push';
@@ -13,7 +15,7 @@ const DB = 'https://young-94e97-default-rtdb.asia-southeast1.firebasedatabase.ap
 const DEFAULT_ROOT = 'couple';
 const ROOT_RE = /^[a-zA-Z0-9_-]{1,40}$/;
 
-const VAPID_PUBLIC = 'BF44yAoEEy2I3mvvE4jgAP6E31CImB3vkqTnf6HBS-moctl8QnDvuMMAPZ4URCgSbS1cz8Lb6Ap7deVSyB-9gMw';
+const VAPID_PUBLIC = process.env.VAPID_PUBLIC || 'BF44yAoEEy2I3mvvE4jgAP6E31CImB3vkqTnf6HBS-moctl8QnDvuMMAPZ4URCgSbS1cz8Lb6Ap7deVSyB-9gMw';
 
 webpush.setVapidDetails(
   'mailto:jeycorp1413@gmail.com',
