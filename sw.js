@@ -6,7 +6,7 @@ self.addEventListener('push', function (event) {
   try { data = event.data ? event.data.json() : {}; }
   catch (e) { data = { title: '우리 캘린더', body: event.data ? event.data.text() : '' }; }
 
-  var title = data.title || '정용 💗 지영';
+  var title = data.title || '💗 우리 캘린더';
   var options = {
     body: data.body || '새 소식이 있어요 💗',
     badge: data.badge,
