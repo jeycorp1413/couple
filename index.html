@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <script>
   /* 시윤♥지영 전용 도메인이면 자동으로 그 사이트로 이동 (다른 도메인엔 영향 없음) */
-  if (location.hostname === "siyoons2.netlify.app") {
+  if (["siyoons2.netlify.app", "siyuns2.netlify.app"].indexOf(location.hostname) >= 0) {
     location.replace("/siyoon.html" + location.search + location.hash);
   }
 </script>
