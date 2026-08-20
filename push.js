@@ -8,7 +8,7 @@
   // 1단계에서 만든 VAPID 공개키 (공개되어도 안전)
   var VAPID_PUBLIC = "BF44yAoEEy2I3mvvE4jgAP6E31CImB3vkqTnf6HBS-moctl8QnDvuMMAPZ4URCgSbS1cz8Lb6Ap7deVSyB-9gMw";
 
-  var ROOT = "couple";
+  var ROOT = (typeof window !== "undefined" && window.PUSH_ROOT) || "couple";
   var loadedAt = Date.now();
   var swReg = null;
 
@@ -49,6 +49,7 @@
       title: lab[0],
       body: body ? body : lab[1],
       senderKey: localStorage.getItem("pushKey") || "",
+      root: ROOT,
     };
     fetch("/.netlify/functions/notify", {
       method: "POST",
