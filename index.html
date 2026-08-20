@@ -2,6 +2,12 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<script>
+  /* 시윤♥지영 전용 도메인이면 자동으로 그 사이트로 이동 (다른 도메인엔 영향 없음) */
+  if (location.hostname === "siyoons2.netlify.app") {
+    location.replace("/siyoon.html" + location.search + location.hash);
+  }
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>정용 ♥ 지영 — 우리 캘린더</title>
 <link rel="manifest" href="manifest.webmanifest?v=3">
