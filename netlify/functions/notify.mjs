@@ -10,7 +10,8 @@
 import webpush from 'web-push';
 
 const DB = 'https://young-94e97-default-rtdb.asia-southeast1.firebasedatabase.app';
-const ROOT = 'couple';
+const DEFAULT_ROOT = 'couple';
+const ROOT_RE = /^[a-zA-Z0-9_-]{1,40}$/;
 
 const VAPID_PUBLIC = 'BF44yAoEEy2I3mvvE4jgAP6E31CImB3vkqTnf6HBS-moctl8QnDvuMMAPZ4URCgSbS1cz8Lb6Ap7deVSyB-9gMw';
 
@@ -25,12 +26,13 @@ export default async (req) => {
 
   let payload = {};
   try { payload = await req.json(); } catch (e) {}
-  const title = payload.title || '정용 💗 지영';
+  const root = ROOT_RE.test(payload.root) ? payload.root : DEFAULT_ROOT;
+  const title = payload.title || '💗 우리 캘린더';
   const body = payload.body || '새 소식이 있어요 💗';
   const senderKey = payload.senderKey || '';
 
   // 구독자 목록 읽기
-  const res = await fetch(`${DB}/${ROOT}/pushSubscriptions.json`);
+  const res = await fetch(`${DB}/${root}/pushSubscriptions.json`);
   const subsObj = res.ok ? (await res.json()) || {} : {};
 
   const msg = JSON.stringify({ title, body, url: '/' });
@@ -46,7 +48,7 @@ export default async (req) => {
       } catch (err) {
         // 만료된 구독은 정리
         if (err.statusCode === 404 || err.statusCode === 410) {
-          await fetch(`${DB}/${ROOT}/pushSubscriptions/${key}.json`, { method: 'DELETE' });
+          await fetch(`${DB}/${root}/pushSubscriptions/${key}.json`, { method: 'DELETE' });
         }
       }
     })

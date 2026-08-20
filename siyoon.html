@@ -117,6 +117,7 @@
   .todo .tx{flex:1; font-size:15.5px;}
   .todo.done .tx{text-decoration:line-through; color:#c5b3bd;}
   .todo .del{border:0; background:none; color:#d6bcc8; cursor:pointer; font-size:15px;}
+  .todo .wb{flex:none; font-size:11px; font-weight:800; color:#fff; padding:3px 9px; border-radius:999px; cursor:pointer;}
 
   /* memo */
   .memo{padding:9px 0; border-bottom:1px solid #f6ecf2;}
@@ -499,7 +500,7 @@
 <body>
 <div class="wrap">
   <div class="top">
-    <h1><span class="y">시윤</span> 💗 <span class="h">지영</span></h1>
+    <h1>시윤이와 지영이의 수명 늘리기 캠페인</h1>
     <button class="gear" id="gearBtn" title="설정">⚙️</button>
   </div>
   <div class="live" id="liveTag">● 연결 중…</div>
@@ -536,6 +537,7 @@
     <div class="sec-title fold-head" id="todoHead">✅ 함께 할 일 <span class="fold" id="todoFold">▸</span></div>
     <div id="todoBody" class="fold-body" style="display:none">
       <div id="todoList"></div>
+      <div class="who" id="todoWho"></div>
       <div class="irow">
         <input type="text" id="todoText" placeholder="같이 할 일을 적어보세요…">
         <button class="add" id="todoAdd">추가</button>
@@ -548,6 +550,7 @@
     <div class="sec-title fold-head" id="wishHead">🌟 가고싶은 곳 · 하고싶은 것 <span class="fold" id="wishFold">▸</span></div>
     <div id="wishBody" class="fold-body" style="display:none">
       <div id="wishList"></div>
+      <div class="who" id="wishWho"></div>
       <div class="irow">
         <input type="text" id="wishText" placeholder="가보고 싶은 곳, 하고 싶은 것…">
         <button class="add" id="wishAdd">추가</button>
@@ -598,6 +601,7 @@
   <button id="tabMemo" aria-label="우리의 한마디"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-4 4V5z"/></svg>한마디</button>
   <button id="tabWish" aria-label="가고싶은 곳"><svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.8 6.2.6-4.7 4.2 1.4 6.2L12 16.9 6.5 19.8l1.4-6.2L3.2 9.4l6.2-.6L12 3z"/></svg>가고싶은곳</button>
   <button id="tabHeart" aria-label="마음 전하기"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.35-9.5-8.8C.6 8.4 2.6 5 6.2 5c2 0 3.4 1 5.8 3.4C14.4 6 15.8 5 17.8 5c3.6 0 5.6 3.4 3.7 7.2C19 16.65 12 21 12 21Z"/></svg>마음</button>
+  <button id="tabPush" aria-label="알림 켜기"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>알림</button>
 </nav>
 
 <!-- day modal -->
@@ -675,6 +679,7 @@ const firebaseConfig = {
   appId: "1:320869908269:web:9a204ef6ae3423e81e5da4",
 };
 const ROOT = "siyoon";   /* 시윤♥지영 전용 공간 (정용♥지영과 분리) */
+window.PUSH_ROOT = ROOT; /* push.js가 같은 이름으로 알림 구독을 저장하도록 */
 const configured = firebaseConfig.apiKey.indexOf("AIza")===0;
 let db=null;
 
@@ -697,7 +702,7 @@ const HOLIDAYS = {
 };
 let SET = {a:"지영", b:"시윤", anniv:"2026-08-20"};
 let EVENTS=[], TODOS=[], MEMOS=[], ANNIVS=[], WISHES=[], PHOTOS=[], MAKEUPS=[];
-let evWho="a", memoWho="a", mkWho="a", photoOpen=false, tripOpen=false, issueWho="a", foodWho="a";
+let evWho="a", memoWho="a", mkWho="a", todoWho="a", wishWho="a", photoOpen=false, tripOpen=false, issueWho="a", foodWho="a";
 let expCat="food", expCur="KRW", expWho="both";
 let TRIP={};
 const TRIP_SEED={};
@@ -1278,6 +1283,7 @@ function chips(boxId, sel, onPick){
 }
 
 /* ---- todo ---- */
+function renderTodoWho(){ chips("todoWho", todoWho, w=>{todoWho=w; renderTodoWho();}); }
 function renderTodos(){
   const box=document.getElementById("todoList");
   if(!TODOS.length){ box.innerHTML='<div class="empty">함께 할 일을 추가해보세요!</div>'; return; }
@@ -1287,13 +1293,15 @@ function renderTodos(){
     const c=document.createElement("div"); c.className="chk"; c.textContent=t.done?"✓":"";
     c.onclick=()=>{ if(db&&t.id) db.ref(ROOT+"/todos/"+t.id+"/done").set(!t.done); };
     const tx=document.createElement("div"); tx.className="tx"; tx.textContent=t.text;
+    const wb=document.createElement("span"); wb.className="wb"; wb.style.background=COL[t.who||"a"]; wb.textContent=whoName(t.who||"a");
+    wb.onclick=()=>{ if(!db||!t.id) return; const order=["a","b","both"]; const next=order[(order.indexOf(t.who||"a")+1)%order.length]; db.ref(ROOT+"/todos/"+t.id+"/who").set(next); };
     const x=document.createElement("button"); x.className="del"; x.textContent="✕";
     x.onclick=()=>{ if(db&&t.id) db.ref(ROOT+"/todos/"+t.id).remove(); };
-    r.append(c,tx,x); box.appendChild(r);
+    r.append(c,tx,wb,x); box.appendChild(r);
   });
 }
 function addTodo(){ const t=document.getElementById("todoText").value.trim(); if(!t) return;
-  if(db) db.ref(ROOT+"/todos").push({text:t, done:false, t:Date.now()});
+  if(db) db.ref(ROOT+"/todos").push({text:t, done:false, who:todoWho, t:Date.now()});
   document.getElementById("todoText").value="";
 }
 
@@ -1332,6 +1340,7 @@ function saveAnniv(){
 }
 
 /* ---- 위시리스트 ---- */
+function renderWishWho(){ chips("wishWho", wishWho, w=>{wishWho=w; renderWishWho();}); }
 function renderWishes(){
   const box=document.getElementById("wishList");
   if(!WISHES.length){ box.innerHTML='<div class="empty">가고 싶은 곳, 하고 싶은 것을 적어보세요!</div>'; return; }
@@ -1341,13 +1350,15 @@ function renderWishes(){
     const c=document.createElement("div"); c.className="chk"; c.textContent=t.done?"✓":"";
     c.onclick=()=>{ if(db&&t.id) db.ref(ROOT+"/wishes/"+t.id+"/done").set(!t.done); };
     const tx=document.createElement("div"); tx.className="tx"; tx.textContent=t.text;
+    const wb=document.createElement("span"); wb.className="wb"; wb.style.background=COL[t.who||"a"]; wb.textContent=whoName(t.who||"a");
+    wb.onclick=()=>{ if(!db||!t.id) return; const order=["a","b","both"]; const next=order[(order.indexOf(t.who||"a")+1)%order.length]; db.ref(ROOT+"/wishes/"+t.id+"/who").set(next); };
     const x=document.createElement("button"); x.className="del"; x.textContent="✕";
     x.onclick=()=>{ if(db&&t.id) db.ref(ROOT+"/wishes/"+t.id).remove(); };
-    r.append(c,tx,x); box.appendChild(r);
+    r.append(c,tx,wb,x); box.appendChild(r);
   });
 }
 function addWish(){ const t=document.getElementById("wishText").value.trim(); if(!t) return;
-  if(db) db.ref(ROOT+"/wishes").push({text:t, done:false, t:Date.now()});
+  if(db) db.ref(ROOT+"/wishes").push({text:t, done:false, who:wishWho, t:Date.now()});
   document.getElementById("wishText").value="";
 }
 
@@ -1527,8 +1538,7 @@ function saveSet(){
   document.getElementById("setOv").classList.remove("open");
 }
 
-function refreshAll(){ renderDday(); renderAnnivs(); renderCal(); renderPhotos(); renderStories(); renderMakeups(); renderMkWho(); renderMkBtns(); renderTodos(); renderWishes(); renderMemos(); renderMemoWho();
-  document.querySelector(".top h1").innerHTML='<span class="y">'+esc(SET.b)+'</span> 💗 <span class="h">'+esc(SET.a)+'</span>';
+function refreshAll(){ renderDday(); renderAnnivs(); renderCal(); renderPhotos(); renderStories(); renderMakeups(); renderMkWho(); renderMkBtns(); renderTodos(); renderTodoWho(); renderWishes(); renderWishWho(); renderMemos(); renderMemoWho();
 }
 
 /* ---- wire ---- */
@@ -1572,6 +1582,7 @@ document.getElementById("tabTodo").onclick=()=>openAndScroll("todoHead","todoBod
 document.getElementById("tabMemo").onclick=()=>openAndScroll("memoHead","memoBody");
 document.getElementById("tabWish").onclick=()=>openAndScroll("wishHead","wishBody");
 document.getElementById("tabHeart").onclick=()=>openAndScroll("mkHead","mkBody");
+document.getElementById("tabPush").onclick=()=>{ if(window.enablePush) window.enablePush(); else alert("알림 기능을 불러오는 중이에요. 잠시 후 다시 눌러주세요."); };
 document.getElementById("gearBtn").onclick=openSet;
 document.getElementById("setClose").onclick=()=>document.getElementById("setOv").classList.remove("open");
 document.getElementById("setSave").onclick=saveSet;
@@ -1688,6 +1699,7 @@ start();
   document.addEventListener("click",function(e){ if(moved && e.target && e.target.closest && e.target.closest(".fold-head")){ e.stopPropagation(); e.preventDefault(); } }, true);
 })();
 </script>
+<script src="push.js?v=3"></script>
 <script>
 /* ---- 꾸미기 효과 모음: 떠다니는 하트 · 밤 모드 · 탭 팡 · 기념일 폭죽 · 접속 반짝 ---- */
 (function(){
