@@ -506,16 +506,6 @@
 
   <div class="warn" id="warn"></div>
 
-  <div class="hero">
-    <span class="fh fh1">💕</span><span class="fh fh3">🩷</span>
-    <span class="fh fh5">💕</span><span class="fh fh7">🩷</span>
-    <div class="frost">
-      <div class="lbl" id="heroLbl">우리가 함께한 지</div>
-      <div class="big" id="heroBig">D+—</div>
-      <div class="sub" id="heroSub"></div>
-    </div>
-  </div>
-
   <!-- 스토리 링 (추억·기념일) -->
   <div class="stories" id="stories"></div>
 
@@ -735,16 +725,7 @@ function parseD(s){ const p=(s||"").split("-"); return new Date(+p[0],(+p[1]||1)
 function whoName(w){ return w==="both"?(SET.a+"·"+SET.b):(w==="b"?SET.b:SET.a); }
 const DAY=86400000;
 
-/* ---- D-day hero + milestones ---- */
-function renderDday(){
-  const anv=midnight(parseD(SET.anniv)), today=midnight(new Date());
-  const diff=Math.round((today-anv)/DAY);
-  const dday=diff+1; /* 사귄 날이 1일 (당일 포함) */
-  document.getElementById("heroBig").textContent = diff>=0 ? ("D+"+dday) : ("D"+diff);
-  document.getElementById("heroLbl").innerHTML = esc(SET.a)+" <i>♥</i> "+esc(SET.b)+" 함께한 지";
-
-  renderAnnivs(); /* 마일스톤은 기념일·생일 카드에서 함께 표시 */
-}
+function renderDday(){ renderAnnivs(); }
 
 /* 다가오는 마일스톤(일수+주년) 가까운 순 n개 */
 function upcomingMarks(n){
@@ -1326,27 +1307,16 @@ function annivNext(a){
 function renderAnnivs(){
   const box=document.getElementById("annivList");
   box.innerHTML="";
-  /* 고정: 사랑한지 (삭제 불가) */
-  const base=parseD(SET.anniv), nx=annivNext({date:SET.anniv, yearly:true});
-  const pin=document.createElement("div"); pin.className="anniv pinned";
-  const pdd=nx.left===0?"오늘🎉":"D-"+nx.left;
-  pin.innerHTML='<span class="al">사랑한지 💗 <small>'+(base.getMonth()+1)+"."+base.getDate()+' · 매년</small></span><span class="ad">'+pdd+'</span>';
-  box.appendChild(pin);
-  /* 마일스톤(가까운 4개) + 등록 기념일 → 디데이 빠른 순 */
-  const marks=upcomingMarks(4).map(m=>({label:m.label+" 💗", next:m.date, left:m.left, milestone:true}));
-  const arr=ANNIVS.map(a=>Object.assign({},a,annivNext(a))).filter(a=>a.yearly||a.left>=0);
-  const all=marks.concat(arr).sort((x,y)=>x.left-y.left);
-  all.forEach(a=>{ const r=document.createElement("div"); r.className="anniv";
-    const dd=a.left===0?"오늘🎉":"D-"+a.left;
-    r.innerHTML='<span class="al">'+esc(a.label)+' <small>'+ymd(a.next).slice(5).replace("-",".")+(a.yearly?" · 매년":"")+'</small></span><span class="ad">'+dd+'</span>';
+  /* 등록된 생일·기념일 → 날짜 빠른 순 (디데이 표시 없음) */
+  const arr=ANNIVS.map(a=>Object.assign({},a,annivNext(a))).filter(a=>a.yearly||a.left>=0).sort((x,y)=>x.left-y.left);
+  arr.forEach(a=>{ const r=document.createElement("div"); r.className="anniv";
+    r.innerHTML='<span class="al">'+esc(a.label)+' <small>'+ymd(a.next).slice(5).replace("-",".")+(a.yearly?" · 매년":"")+'</small></span>';
     /* 삭제는 행 길게 누르기(0.6초) — ✕ 버튼 없이 열 정렬 유지 */
-    if(!a.milestone){
-      let ht=null;
-      const arm=()=>{ ht=setTimeout(()=>{ if(confirm('"'+a.label+'" 기념일을 삭제할까요?') && db && a.id) db.ref(ROOT+"/anniversaries/"+a.id).remove(); }, 600); };
-      const off=()=>clearTimeout(ht);
-      r.addEventListener("touchstart",arm,{passive:true}); r.addEventListener("mousedown",arm);
-      ["touchend","touchmove","mouseup","mouseleave"].forEach(ev=>r.addEventListener(ev,off));
-    }
+    let ht=null;
+    const arm=()=>{ ht=setTimeout(()=>{ if(confirm('"'+a.label+'" 기념일을 삭제할까요?') && db && a.id) db.ref(ROOT+"/anniversaries/"+a.id).remove(); }, 600); };
+    const off=()=>clearTimeout(ht);
+    r.addEventListener("touchstart",arm,{passive:true}); r.addEventListener("mousedown",arm);
+    ["touchend","touchmove","mouseup","mouseleave"].forEach(ev=>r.addEventListener(ev,off));
     box.appendChild(r);
   });
   if(!ANNIVS.length){ const em=document.createElement("div"); em.className="empty"; em.textContent="+ 추가를 눌러 생일·기념일을 더 등록해보세요"; box.appendChild(em); }
@@ -1621,7 +1591,13 @@ function start(){
   db.ref(ROOT+"/makeups").on("value",s=>{ const v=s.val()||{}; MAKEUPS=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderMakeups(); });
   db.ref(ROOT+"/todos").on("value",s=>{ const v=s.val()||{}; TODOS=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderTodos(); });
   db.ref(ROOT+"/memos").on("value",s=>{ const v=s.val()||{}; MEMOS=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderMemos(); });
-  db.ref(ROOT+"/anniversaries").on("value",s=>{ const v=s.val()||{}; ANNIVS=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderAnnivs(); renderStories(); });
+  db.ref(ROOT+"/anniversaries").on("value",s=>{ const v=s.val();
+    if(!v){
+      db.ref(ROOT+"/anniversaries").push({label:"지영생일💗", date:"2000-10-17", yearly:true, t:Date.now()});
+      db.ref(ROOT+"/anniversaries").push({label:"시윤생일💗", date:"2000-12-18", yearly:true, t:Date.now()+1});
+      return;
+    }
+    ANNIVS=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderAnnivs(); renderStories(); });
   db.ref(ROOT+"/wishes").on("value",s=>{ const v=s.val()||{}; WISHES=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderWishes(); });
   setInterval(renderDday, 60000);
 }
