@@ -22,7 +22,7 @@
      - 색: 화이트/다크 기반, iOS 시스템 블루 포인트, 사람 구분은 오렌지·블루 점
      ===================================================================== */
   :root{
-    --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",system-ui,"Apple SD Gothic Neo",Pretendard,"Segoe UI",Roboto,"Malgun Gothic",sans-serif;
+    --font:Pretendard,"Pretendard Variable",-apple-system,BlinkMacSystemFont,system-ui,"Apple SD Gothic Neo","Segoe UI",Roboto,sans-serif;
     --bg:#F2F2F7; --card:#FFFFFF;
     --fill:rgba(120,120,128,.12); --fill2:rgba(120,120,128,.08); --fill3:rgba(120,120,128,.20);
     --ink:#1C1C1E; --t2:rgba(60,60,67,.62); --t3:rgba(60,60,67,.38); --t4:rgba(60,60,67,.22);
@@ -139,6 +139,7 @@
   .cell .dn{display:flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:50%; font-size:15px; font-weight:500; color:var(--ink); font-variant-numeric:tabular-nums; padding:0;}
   .cell .dn.sun,.cell .dn.hol{color:var(--red);} .cell .dn.sat{color:var(--t2);}
   .cell.today .dn{background:var(--accent); color:#fff; font-weight:700;}
+  .holname.anv{color:var(--both);}
   .holname{font-size:8.5px; color:var(--red); font-weight:600; line-height:1.1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;}
   .cell .cdots{display:flex; justify-content:center; gap:3px; margin-top:3px; min-height:6px;}
   .cell .cdots i{width:6px; height:6px; border-radius:50%; display:block;}
@@ -439,7 +440,7 @@
   <div class="warn" id="warn"></div>
 
   <div class="hero">
-    <div class="lbl" id="heroLbl">함께한 지</div>
+    <div class="lbl" id="heroLbl">사랑한지♥</div>
     <div class="big" id="heroBig"><b>—</b></div>
     <div class="sub" id="heroSub"></div>
     <div class="bar"><i id="heroBar"></i></div>
@@ -646,12 +647,12 @@ const FIXED_BIRTH = {a:"10-17", b:"03-08"}; /* 지영 10/17 · 동영 3/8 */
 function fixedAnnivs(){
   const y=parseD(SET.anniv).getFullYear();
   const list=[
-    {id:null, fixed:true, who:"both", label:"사귄 날",      date:SET.anniv,           yearly:true},
-    {id:null, fixed:true, who:"b",    label:SET.b+" 생일", date:y+"-"+FIXED_BIRTH.b, yearly:true},
-    {id:null, fixed:true, who:"a",    label:SET.a+" 생일", date:y+"-"+FIXED_BIRTH.a, yearly:true},
+    {id:null, fixed:true, who:"both", label:"사랑한지♥",    date:SET.anniv,           yearly:true, cal:true, kind:"anniv"},
+    {id:null, fixed:true, who:"b",    label:SET.b+" 생일", date:y+"-"+FIXED_BIRTH.b, yearly:true, cal:true},
+    {id:null, fixed:true, who:"a",    label:SET.a+" 생일", date:y+"-"+FIXED_BIRTH.a, yearly:true, cal:true},
   ];
   const m=upcomingMarks(1)[0]; /* 다음 마일스톤(100일·200일·…·N주년)도 함께 */
-  if(m) list.push({id:null, fixed:true, who:"both", label:m.label, date:ymd(m.date), yearly:false});
+  if(m) list.push({id:null, fixed:true, who:"both", label:m.label, date:ymd(m.date), yearly:false, cal:true});
   return list;
 }
 function allAnnivs(){
@@ -693,7 +694,7 @@ function renderDday(){
   const dday=diff+1; /* 사귄 날이 1일 (당일 포함) */
   const big=document.getElementById("heroBig"), lbl=document.getElementById("heroLbl"), sub=document.getElementById("heroSub");
   const bar=document.getElementById("heroBar"), nx=document.getElementById("heroNext"), lf=document.getElementById("heroLeft");
-  if(diff>=0){ big.innerHTML='<b>'+dday.toLocaleString("ko-KR")+'</b><small>일</small>'; lbl.textContent="함께한 지"; }
+  if(diff>=0){ big.innerHTML='<b>'+dday.toLocaleString("ko-KR")+'</b><small>일</small>'; lbl.textContent="사랑한지♥"; }
   else { big.innerHTML='<b>D-'+(-diff)+'</b>'; lbl.textContent="시작까지"; }
   sub.textContent=anv.getFullYear()+"년 "+(anv.getMonth()+1)+"월 "+anv.getDate()+"일부터";
   /* 다음 마일스톤(100일·200일·…·N주년)까지 진행바 */
@@ -728,6 +729,7 @@ function renderCal(){
   const todayStr=ymd(new Date());
   /* events grouped by date */
   const byDate={}; EVENTS.forEach(e=>{ (byDate[e.date]=byDate[e.date]||[]).push(e); });
+  const calFx=fixedAnnivs().filter(a=>a.cal); /* 달력에 박아둘 고정 기념일(사랑한지♥) */
   for(let i=0;i<first;i++){ const b=document.createElement("div"); b.className="cell blank"; grid.appendChild(b); }
   for(let d=1; d<=days; d++){
     const ds=viewY+"-"+pad(viewM+1)+"-"+pad(d);
@@ -738,6 +740,7 @@ function renderCal(){
     const evs=byDate[ds]||[];
     let html='<div class="dn'+red+(hn?" hol":"")+'">'+d+'</div>';
     if(hn) html+='<div class="holname">'+esc(hn)+'</div>';
+    calFx.forEach(a=>{ const ad=parseD(a.date); if(a.yearly ? (ad.getMonth()===viewM && ad.getDate()===d) : ymd(ad)===ds) html+='<div class="holname anv" style="color:'+(COL[a.who]||COL.both)+'">'+esc(a.label)+'</div>'; });
     if(evs.length){ html+='<div class="cdots">';
       evs.slice(0,4).forEach(e=>{ html+='<i style="background:'+(COL[e.who]||COL.a)+'"></i>'; });
       html+='</div>'; }
@@ -1122,7 +1125,13 @@ function openDay(ds){ curDay=ds; const dt=parseD(ds);
   const wk=["일","월","화","수","목","금","토"][dt.getDay()];
   document.getElementById("dayTitle").textContent=(dt.getMonth()+1)+"월 "+dt.getDate()+"일 ("+wk+")";
   const hn=HOLIDAYS[ds];
-  document.getElementById("dayHol").textContent = hn ? ("🎉 "+hn) : "이 날의 일정이에요";
+  const parts=[]; if(hn) parts.push("🎉 "+hn);
+  fixedAnnivs().filter(a=>a.cal).forEach(a=>{ const ad=parseD(a.date);
+    const hit = a.yearly ? (ad.getMonth()===dt.getMonth() && ad.getDate()===dt.getDate()) : ymd(ad)===ds;
+    if(!hit) return;
+    if(a.kind==="anniv"){ const yrs=dt.getFullYear()-ad.getFullYear(); parts.push(a.label+" "+(yrs>0?yrs+"주년":"시작한 날")); }
+    else parts.push((a.who==="a"||a.who==="b")?"🎂 "+a.label:a.label); });
+  document.getElementById("dayHol").textContent = parts.length ? parts.join(" · ") : "이 날의 일정이에요";
   renderDayList(); renderEvWho(); renderCats();
   document.getElementById("dayOv").classList.add("open");
 }
