@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>동영 &amp; 지영 — 우리 캘린더</title>
 <link rel="manifest" href="manifest-dongyoung.webmanifest?v=1">
-<meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#EEF0F6" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -23,44 +23,47 @@
      ===================================================================== */
   :root{
     --font:Pretendard,"Pretendard Variable",-apple-system,BlinkMacSystemFont,system-ui,"Apple SD Gothic Neo","Segoe UI",Roboto,sans-serif;
-    --bg:#F2F2F7; --card:#FFFFFF;
+    --bg:#EEF0F6; --card:rgba(255,255,255,.62); --card-solid:#FFFFFF; --sheet:rgba(255,255,255,.86);
+    --gb:rgba(255,255,255,.78); --chip:rgba(255,255,255,.62);
+    --mesh:radial-gradient(circle at 18% 8%,rgba(120,160,255,.42),transparent 38%),radial-gradient(circle at 88% 28%,rgba(255,170,120,.34),transparent 38%),radial-gradient(circle at 45% 95%,rgba(170,130,255,.30),transparent 42%);
+    --sheen:linear-gradient(135deg,rgba(255,255,255,.55),rgba(255,255,255,0) 45%);
     --fill:rgba(120,120,128,.12); --fill2:rgba(120,120,128,.08); --fill3:rgba(120,120,128,.20);
     --ink:#1C1C1E; --t2:rgba(60,60,67,.62); --t3:rgba(60,60,67,.38); --t4:rgba(60,60,67,.22);
     --sep:rgba(60,60,67,.14);
     --accent:#007AFF; --accent-soft:rgba(0,122,255,.12);
     --a:#FF9500; --b:#007AFF; --both:#5856D6;
     --red:#FF3B30; --green:#34C759; --yellow:#FFCC00;
-    --sh:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06);
-    --sh-lg:0 12px 40px rgba(0,0,0,.14);
-    --glass:rgba(255,255,255,.72); --glass-b:rgba(60,60,67,.12);
+    --sh:0 8px 30px rgba(60,60,90,.08);
+    --sh-lg:0 16px 48px rgba(60,60,90,.18);
+    --glass:rgba(255,255,255,.58); --glass-b:rgba(255,255,255,.8);
     --ov:rgba(0,0,0,.32);
-    --r:16px; --r-lg:20px; --r-sm:12px;
+    --r:22px; --r-lg:26px; --r-sm:12px;
     --ease:cubic-bezier(.22,1,.36,1);
     /* 인라인 JS가 참조하던 옛 변수명 → 새 토큰으로 연결 */
     --pink:var(--accent); --pink-deep:var(--accent); --blue:var(--b); --blue-deep:var(--b); --line:var(--sep); --muted:var(--t2);
   }
   body.night{
-    --bg:#000000; --card:#1C1C1E;
+    --bg:#000000; --card:rgba(28,28,30,.66); --card-solid:#1C1C1E; --sheet:rgba(28,28,30,.9); --gb:rgba(255,255,255,.08); --chip:rgba(120,120,128,.26); --mesh:radial-gradient(circle at 18% 8%,rgba(10,132,255,.26),transparent 40%),radial-gradient(circle at 88% 28%,rgba(255,159,10,.16),transparent 40%),radial-gradient(circle at 45% 95%,rgba(94,92,230,.26),transparent 44%); --sheen:linear-gradient(135deg,rgba(255,255,255,.09),rgba(255,255,255,0) 45%);
     --fill:rgba(120,120,128,.24); --fill2:rgba(120,120,128,.16); --fill3:rgba(120,120,128,.32);
     --ink:#F2F2F7; --t2:rgba(235,235,245,.6); --t3:rgba(235,235,245,.36); --t4:rgba(235,235,245,.22);
     --sep:rgba(84,84,88,.5);
     --accent:#0A84FF; --accent-soft:rgba(10,132,255,.18);
     --a:#FF9F0A; --b:#0A84FF; --both:#5E5CE6;
     --red:#FF453A; --green:#30D158; --yellow:#FFD60A;
-    --sh:0 1px 2px rgba(0,0,0,.4); --sh-lg:0 12px 40px rgba(0,0,0,.6);
-    --glass:rgba(28,28,30,.72); --glass-b:rgba(84,84,88,.5); --ov:rgba(0,0,0,.5);
+    --sh:0 8px 30px rgba(0,0,0,.45); --sh-lg:0 16px 48px rgba(0,0,0,.65);
+    --glass:rgba(28,28,30,.6); --glass-b:rgba(255,255,255,.1); --ov:rgba(0,0,0,.55);
   }
   @media (prefers-color-scheme: dark){
     body{
-      --bg:#000000; --card:#1C1C1E;
+      --bg:#000000; --card:rgba(28,28,30,.66); --card-solid:#1C1C1E; --sheet:rgba(28,28,30,.9); --gb:rgba(255,255,255,.08); --chip:rgba(120,120,128,.26); --mesh:radial-gradient(circle at 18% 8%,rgba(10,132,255,.26),transparent 40%),radial-gradient(circle at 88% 28%,rgba(255,159,10,.16),transparent 40%),radial-gradient(circle at 45% 95%,rgba(94,92,230,.26),transparent 44%); --sheen:linear-gradient(135deg,rgba(255,255,255,.09),rgba(255,255,255,0) 45%);
       --fill:rgba(120,120,128,.24); --fill2:rgba(120,120,128,.16); --fill3:rgba(120,120,128,.32);
       --ink:#F2F2F7; --t2:rgba(235,235,245,.6); --t3:rgba(235,235,245,.36); --t4:rgba(235,235,245,.22);
       --sep:rgba(84,84,88,.5);
       --accent:#0A84FF; --accent-soft:rgba(10,132,255,.18);
       --a:#FF9F0A; --b:#0A84FF; --both:#5E5CE6;
       --red:#FF453A; --green:#30D158; --yellow:#FFD60A;
-      --sh:0 1px 2px rgba(0,0,0,.4); --sh-lg:0 12px 40px rgba(0,0,0,.6);
-      --glass:rgba(28,28,30,.72); --glass-b:rgba(84,84,88,.5); --ov:rgba(0,0,0,.5);
+      --sh:0 8px 30px rgba(0,0,0,.45); --sh-lg:0 16px 48px rgba(0,0,0,.65);
+      --glass:rgba(28,28,30,.6); --glass-b:rgba(255,255,255,.1); --ov:rgba(0,0,0,.55);
     }
   }
 
@@ -68,22 +71,25 @@
   html{scroll-behavior:smooth;}
   body{margin:0; font-family:var(--font); font-size:15px; line-height:1.45; letter-spacing:-.01em;
     background:var(--bg); color:var(--ink); min-height:100vh; -webkit-text-size-adjust:100%; -webkit-font-smoothing:antialiased;}
+  body::before{content:""; position:fixed; inset:0; z-index:-1; pointer-events:none; background:var(--mesh);}
   .wrap{max-width:480px; margin:0 auto;
-    padding:calc(8px + env(safe-area-inset-top)) calc(20px + env(safe-area-inset-right)) calc(96px + env(safe-area-inset-bottom)) calc(20px + env(safe-area-inset-left));}
+    padding:calc(8px + env(safe-area-inset-top)) calc(20px + env(safe-area-inset-right)) calc(110px + env(safe-area-inset-bottom)) calc(20px + env(safe-area-inset-left));}
 
   /* ---------- 상단 라지 타이틀 ---------- */
   .top{display:flex; align-items:flex-end; justify-content:space-between; gap:10px; padding:18px 0 14px;}
   .top h1{margin:0; font-size:30px; font-weight:700; letter-spacing:-.03em; line-height:1.1; color:var(--ink);}
   .top h1 .h,.top h1 .y{color:var(--ink);}
   .top h1 .amp{color:var(--t3); font-weight:500; margin:0 7px;}
-  .gear{border:0; background:var(--fill); color:var(--t2); border-radius:50%; width:34px; height:34px; cursor:pointer; flex:none; display:grid; place-items:center; padding:0;}
+  .gear{border:1px solid var(--gb); background:var(--chip); color:var(--t2); box-shadow:0 4px 14px rgba(60,60,90,.08); border-radius:50%; width:34px; height:34px; cursor:pointer; flex:none; display:grid; place-items:center; padding:0;}
   .gear svg{width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;}
   .live{display:none;}
   .warn{background:rgba(255,204,0,.18); color:#8a6d00; border-radius:var(--r-sm); padding:11px 13px; font-size:13px; margin-bottom:14px; display:none;}
   .empty{color:var(--t3); font-size:14px; padding:8px 2px;}
 
   /* ---------- 히어로 (함께한 지 N일 + 다음 마일스톤 진행바) ---------- */
-  .hero{position:relative; background:var(--card); border-radius:var(--r-lg); padding:22px 22px 20px; margin-bottom:14px; box-shadow:var(--sh);}
+  .hero{position:relative; background:var(--card); border-radius:var(--r-lg); padding:22px 22px 20px; margin-bottom:14px; box-shadow:var(--sh); border:1px solid var(--gb); -webkit-backdrop-filter:blur(24px) saturate(160%); backdrop-filter:blur(24px) saturate(160%); overflow:hidden;}
+  .hero::before{content:""; position:absolute; inset:0; background:var(--sheen); pointer-events:none;}
+  .hero>*{position:relative;}
   .hero .lbl{font-size:13px; font-weight:600; color:var(--t2); letter-spacing:0;}
   .hero .big{font-size:56px; font-weight:700; letter-spacing:-.045em; line-height:1; margin:6px 0 5px; font-variant-numeric:tabular-nums; color:var(--ink);}
   .hero .big b{font-weight:700;}
@@ -100,19 +106,19 @@
   .stories .story{flex:none; width:60px; display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer;}
   .stories .ring{width:60px; height:60px; border-radius:50%; padding:2px; background:var(--fill3);}
   .stories .ring.add{background:var(--accent-soft);}
-  .stories .ring .rin{width:100%; height:100%; border-radius:50%; border:2px solid var(--card); background:var(--card); display:flex; align-items:center; justify-content:center; font-size:22px; overflow:hidden; color:var(--accent); font-weight:500;}
+  .stories .ring .rin{width:100%; height:100%; border-radius:50%; border:2px solid var(--card-solid); background:var(--card-solid); display:flex; align-items:center; justify-content:center; font-size:22px; overflow:hidden; color:var(--accent); font-weight:500;}
   .stories .ring .rin img{width:100%; height:100%; object-fit:cover;}
   .stories .slbl{font-size:11px; font-weight:500; color:var(--t2); max-width:60px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-variant-numeric:tabular-nums;}
 
   /* ---------- 카드 · 섹션 제목 ---------- */
-  .card{background:var(--card); border-radius:var(--r); padding:18px 18px 16px; margin-bottom:14px; box-shadow:var(--sh); border:0;}
+  .card{background:var(--card); border-radius:var(--r); padding:18px 18px 16px; margin-bottom:14px; box-shadow:var(--sh); border:1px solid var(--gb); -webkit-backdrop-filter:blur(24px) saturate(160%); backdrop-filter:blur(24px) saturate(160%);}
   .sec-title{font-weight:700; font-size:17px; margin:0 0 12px; letter-spacing:-.02em; display:flex; align-items:center; gap:7px; color:var(--ink);}
   .sec-title.fold-head{cursor:pointer; margin-bottom:0; -webkit-user-select:none; user-select:none;}
   .fold{margin-left:auto; color:var(--t3); font-size:15px; line-height:1;}
   .fold-body{margin-top:12px;}
   #tripBody{margin-top:14px;}
   #photoList{margin-top:12px;}
-  .mini-add{margin-left:auto; border:0; background:var(--accent-soft); color:var(--accent); font:inherit; font-size:13px; font-weight:600; border-radius:999px; padding:6px 12px; cursor:pointer;}
+  .mini-add{margin-left:auto; border:1px solid var(--gb); background:var(--chip); color:var(--accent); font:inherit; font-size:13px; font-weight:600; border-radius:999px; padding:6px 12px; cursor:pointer;}
 
   /* ---------- 기념일 목록 ---------- */
   .anniv{display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--sep);}
@@ -130,7 +136,7 @@
   /* ---------- 달력 ---------- */
   .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
   .cal-head .mtitle{font-size:17px; font-weight:700; letter-spacing:-.02em;}
-  .cal-nav{border:0; background:var(--fill); color:var(--accent); width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:18px; font-weight:600; display:grid; place-items:center; line-height:1; padding:0 0 2px;}
+  .cal-nav{border:1px solid var(--gb); background:var(--chip); color:var(--accent); width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:18px; font-weight:600; display:grid; place-items:center; line-height:1; padding:0 0 2px;}
   .grid{display:grid; grid-template-columns:repeat(7,1fr); gap:2px;}
   .gd{text-align:center; font-size:11px; font-weight:600; color:var(--t3); padding:4px 0 6px; letter-spacing:.02em;}
   .gd.sun{color:var(--red);} .gd.sat{color:var(--t2);}
@@ -179,7 +185,7 @@
   /* ---------- 모달 · 바텀시트 ---------- */
   .ov{position:fixed; inset:0; background:var(--ov); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); display:none; align-items:center; justify-content:center; padding:18px; z-index:50;}
   .ov.open{display:flex;}
-  .modal{background:var(--card); border-radius:var(--r-lg); padding:20px; width:100%; max-width:380px; max-height:86vh; overflow:auto; box-shadow:var(--sh-lg);}
+  .modal{background:var(--sheet); -webkit-backdrop-filter:blur(30px) saturate(180%); backdrop-filter:blur(30px) saturate(180%); border:1px solid var(--gb); border-radius:var(--r-lg); padding:20px; width:100%; max-width:380px; max-height:86vh; overflow:auto; box-shadow:var(--sh-lg);}
   .modal h3{margin:0 0 4px; font-size:20px; font-weight:700; letter-spacing:-.02em;}
   .modal .msub{font-size:13px; color:var(--t2); margin-bottom:14px;}
   .modal label{display:block; font-size:12.5px; color:var(--t2); font-weight:600; margin:14px 0 6px; letter-spacing:0;}
@@ -209,7 +215,7 @@
   .subbtn:active{background:var(--fill3);}
   .mbtns{display:flex; gap:8px; margin-top:18px;}
   .evedit{background:var(--fill2); border-radius:14px; padding:12px; margin:7px 0 10px;}
-  .evedit .placein{background:var(--card);}
+  .evedit .placein{background:var(--card-solid);}
   .btn{flex:1; border:0; background:var(--accent); color:#fff; font:inherit; font-weight:600; font-size:15px; padding:13px; border-radius:var(--r-sm); cursor:pointer;}
   .btn.ghost{background:var(--fill); color:var(--ink);}
 
@@ -219,7 +225,7 @@
   .stars{display:flex; gap:4px; font-size:24px; cursor:pointer; user-select:none;}
   .stars span{color:var(--t4);}
   .stars span.on{color:var(--yellow);}
-  .revbox input{width:100%; border:0; background:var(--card); border-radius:10px; padding:11px 12px; font:inherit; font-size:15px; outline:0; margin-top:8px; color:var(--ink);}
+  .revbox input{width:100%; border:0; background:var(--card-solid); border-radius:10px; padding:11px 12px; font:inherit; font-size:15px; outline:0; margin-top:8px; color:var(--ink);}
   .revbox input:focus{box-shadow:0 0 0 2px var(--accent) inset;}
 
   /* ---------- 마음 전하기 ---------- */
@@ -255,7 +261,7 @@
   .trip-meta .tm-info{font-size:13.5px; color:var(--t2); line-height:1.6; background:var(--fill2); border-radius:var(--r-sm); padding:10px 12px;}
   .meta-edit{margin-top:9px; background:var(--fill); border:0; color:var(--t2); border-radius:9px; padding:6px 12px; font-size:12px; cursor:pointer;}
   #tripDays{margin-top:16px;}
-  .trip-day{background:var(--card); border:1px solid var(--sep); border-radius:14px; padding:15px 16px; margin-bottom:11px;}
+  .trip-day{background:var(--card-solid); border:1px solid var(--sep); border-radius:14px; padding:15px 16px; margin-bottom:11px;}
   .trip-day .td-top{display:flex; align-items:center; gap:6px;}
   .trip-day .td-h{font-weight:700; font-size:15.5px; color:var(--ink); flex:1;}
   .trip-day .td-x{border:0; background:none; cursor:pointer; font-size:13px; color:var(--t3); padding:0 2px;}
@@ -361,7 +367,7 @@
   #photoList .feed-day{display:flex; align-items:center; font-size:13.5px; font-weight:600; color:var(--t2); margin:16px 2px 10px;}
   #photoList .feed-day .fadd{margin-left:auto; border:0; background:var(--accent-soft); color:var(--accent); font:inherit; font-size:12.5px; font-weight:600; border-radius:999px; padding:6px 12px; cursor:pointer;}
   #photoList .feed-empty{background:var(--fill2); border:1.5px dashed var(--t4); color:var(--t2); border-radius:var(--r); padding:22px; text-align:center; font-size:13px; font-weight:500; cursor:pointer; margin-bottom:14px;}
-  #photoList .feed-post{background:var(--card); border-radius:var(--r); overflow:hidden; box-shadow:var(--sh); margin-bottom:14px; border:1px solid var(--sep);}
+  #photoList .feed-post{background:var(--card-solid); border-radius:var(--r); overflow:hidden; box-shadow:var(--sh); margin-bottom:14px; border:1px solid var(--gb);}
   #photoList .feed-post .fimg img{width:100%; display:block; max-height:400px; object-fit:cover; cursor:pointer;}
   #photoList .feed-post .fact{display:flex; align-items:center; gap:4px; padding:9px 12px 2px;}
   #photoList .feed-post .hb{border:0; background:none; cursor:pointer; padding:4px; color:var(--ink); line-height:0;}
@@ -383,16 +389,16 @@
   .imgov .imghint{position:fixed; left:0; right:0; bottom:calc(env(safe-area-inset-bottom) + 14px); text-align:center; color:rgba(255,255,255,.72); font-size:12px; pointer-events:none; z-index:62;}
 
   /* ---------- 하단 탭바 (유리) ---------- */
-  .tabbar{position:fixed; left:0; right:0; bottom:0; z-index:40; max-width:480px; margin:0 auto;
-    display:flex; align-items:flex-start; justify-content:space-around;
-    padding:8px 6px calc(10px + env(safe-area-inset-bottom));
-    background:var(--glass); -webkit-backdrop-filter:blur(24px) saturate(180%); backdrop-filter:blur(24px) saturate(180%);
-    border-top:1px solid var(--glass-b);}
+  .tabbar{position:fixed; left:50%; transform:translateX(-50%); width:min(100% - 32px, 448px); bottom:calc(14px + env(safe-area-inset-bottom)); z-index:40;
+    display:flex; align-items:center; justify-content:space-around; padding:8px 8px; border-radius:999px;
+    background:var(--glass); -webkit-backdrop-filter:blur(30px) saturate(180%); backdrop-filter:blur(30px) saturate(180%);
+    border:1px solid var(--glass-b); box-shadow:0 10px 30px rgba(60,60,90,.16);}
   .tabbar button{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
-    border:0; background:none; color:var(--t3); font:inherit; font-size:10px; font-weight:500; padding:4px 0; cursor:pointer; letter-spacing:0;}
+    border:0; background:none; color:var(--t3); font:inherit; font-size:10px; font-weight:500; padding:7px 0; border-radius:999px; cursor:pointer; letter-spacing:0;}
   .tabbar button svg{width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linejoin:round; stroke-linecap:round;}
+  .tabbar button.on{background:var(--accent-soft);}
   .tabbar button.on,.tabbar button:active{color:var(--accent);}
-  @media (prefers-reduced-transparency: reduce){ .tabbar,.glassbar,.celeb-toast{background:var(--card); -webkit-backdrop-filter:none; backdrop-filter:none;} .ov{-webkit-backdrop-filter:none; backdrop-filter:none;} }
+  @media (prefers-reduced-transparency: reduce){ .tabbar,.glassbar,.celeb-toast,.card,.hero,.modal{background:var(--card-solid); -webkit-backdrop-filter:none; backdrop-filter:none;} body::before{display:none;} .ov{-webkit-backdrop-filter:none; backdrop-filter:none;} }
 
   /* ---------- 스크롤 시 나타나는 컴팩트 유리 헤더 ---------- */
   .glassbar{position:fixed; top:0; left:0; right:0; z-index:60; display:flex; align-items:center; justify-content:center; gap:8px;
