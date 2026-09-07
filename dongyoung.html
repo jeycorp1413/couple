@@ -433,6 +433,27 @@
     .sheetov.open .modal{animation:none;} .glassbar{transition:opacity .2s ease; transform:none;}
     .hero .bar i{transition:none;}
   }
+
+  /* ---------- 반응형: 태블릿·PC 2단 ---------- */
+  .cols{display:flex; flex-direction:column;}
+  .col-l,.col-r{min-width:0;}
+  @media (min-width: 768px){
+    .wrap{max-width:1080px; padding-left:calc(32px + env(safe-area-inset-left)); padding-right:calc(32px + env(safe-area-inset-right));}
+    .top{padding:26px 0 18px;} .top h1{font-size:34px;}
+    .cols{flex-direction:row; gap:22px; align-items:flex-start;}
+    .col-l{width:380px; flex:none; position:sticky; top:16px;}
+    .col-r{flex:1;}
+    .hero .big{font-size:60px;}
+    .cell{min-height:64px;} .cell .dn{width:34px; height:34px; font-size:16px;} .holname{font-size:10px;} .cell .cdots i{width:7px; height:7px;}
+    .ov.sheetov{align-items:center; padding:24px;}
+    .sheetov .modal{border-radius:26px; max-width:460px; max-height:86vh; padding-top:20px;}
+    .sheetov.open .modal{animation:dlgIn .3s var(--ease);}
+    @keyframes dlgIn{from{transform:translateY(16px) scale(.98); opacity:0;} to{transform:none; opacity:1;}}
+    .sheet-grip{display:none;}
+    .tabbar{bottom:20px;}
+    #photoList .feed-post .fimg img{max-height:520px;}
+  }
+  @media (min-width: 1200px){ .wrap{max-width:1180px;} .col-l{width:420px;} }
 </style>
 </head>
 <body>
@@ -445,6 +466,7 @@
 
   <div class="warn" id="warn"></div>
 
+  <div class="cols"><div class="col-l">
   <div class="hero">
     <div class="lbl" id="heroLbl">사랑한지♥</div>
     <div class="big" id="heroBig"><b>—</b></div>
@@ -458,10 +480,11 @@
 
   <!-- 기념일·생일 -->
   <div class="card">
-    <div class="sec-title">기념일 · 생일 <button class="mini-add" id="annivAdd">+ 추가</button></div>
+    <div class="sec-title">기념일 · 생일 🎂 <button class="mini-add" id="annivAdd">+ 추가</button></div>
     <div id="annivList"></div>
   </div>
 
+  </div><div class="col-r">
   <!-- calendar -->
   <div class="card">
     <div class="cal-head">
@@ -474,13 +497,13 @@
 
   <!-- 데이트 사진 -->
   <div class="card">
-    <div class="sec-title fold-head" id="photoHead">데이트 사진 기록 <span class="fold" id="photoFold">▸</span></div>
+    <div class="sec-title fold-head" id="photoHead">데이트 사진 기록 📸 <span class="fold" id="photoFold">▸</span></div>
     <div id="photoList" style="display:none"></div>
   </div>
 
   <!-- todo -->
   <div class="card">
-    <div class="sec-title fold-head" id="todoHead">함께 할 일 <span class="fold" id="todoFold">▸</span></div>
+    <div class="sec-title fold-head" id="todoHead">함께 할 일 ✅ <span class="fold" id="todoFold">▸</span></div>
     <div id="todoBody" class="fold-body" style="display:none">
       <div id="todoList"></div>
       <div class="who" id="todoWho"></div>
@@ -493,7 +516,7 @@
 
   <!-- 위시리스트 -->
   <div class="card">
-    <div class="sec-title fold-head" id="wishHead">가고싶은 곳 · 하고싶은 것 <span class="fold" id="wishFold">▸</span></div>
+    <div class="sec-title fold-head" id="wishHead">가고싶은 곳 · 하고싶은 것 🌟 <span class="fold" id="wishFold">▸</span></div>
     <div id="wishBody" class="fold-body" style="display:none">
       <div id="wishList"></div>
       <div class="who" id="wishWho"></div>
@@ -506,7 +529,7 @@
 
   <!-- 마음 전하기 -->
   <div class="card">
-    <div class="sec-title fold-head" id="mkHead">마음 전하기 <span class="fold" id="mkFold">▸</span></div>
+    <div class="sec-title fold-head" id="mkHead">마음 전하기 💗 <span class="fold" id="mkFold">▸</span></div>
     <div id="mkBody" class="fold-body" style="display:none">
       <div class="who" id="mkWho"></div>
       <input type="text" id="mkMsg" class="mkmsg-in" placeholder="한마디 덧붙이기 (선택)…">
@@ -517,7 +540,7 @@
 
   <!-- memo -->
   <div class="card">
-    <div class="sec-title fold-head" id="memoHead"><span id="memoTitle">우리의 한마디</span> <span class="fold" id="memoFold">▸</span></div>
+    <div class="sec-title fold-head" id="memoHead"><span id="memoTitle">우리의 한마디 💌</span> <span class="fold" id="memoFold">▸</span></div>
     <div id="memoBody" class="fold-body" style="display:none">
       <div id="memoList"></div>
       <div class="who" id="memoWho"></div>
@@ -530,7 +553,7 @@
 
   <!-- 지난 여행 추억 -->
   <div class="card">
-    <div class="sec-title fold-head" id="tripMemHead">지난 여행 추억 <span class="fold" id="tripMemFold">▸</span></div>
+    <div class="sec-title fold-head" id="tripMemHead">지난 여행 추억 🌴 <span class="fold" id="tripMemFold">▸</span></div>
     <div id="tripMemBody" style="display:none">
       <div class="trip-grp">다녀온 여행</div>
       <div class="trip-empty">다녀온 여행이 생기면 여기에 추가할게요</div>
@@ -538,6 +561,7 @@
       <div class="trip-empty">다음 여행 계획이 생기면 여기에 추가할게요</div>
     </div>
   </div>
+  </div></div>
 </div>
 
 <!-- 하단 탭바 -->
@@ -1493,7 +1517,7 @@ function renderMakeups(){
 function renderMemos(){
   const box=document.getElementById("memoList");
   const title=document.getElementById("memoTitle");
-  title.textContent = MEMOS.length ? ("우리의 한마디 ("+MEMOS.length+")") : "우리의 한마디";
+  title.textContent = MEMOS.length ? ("우리의 한마디 💌 ("+MEMOS.length+")") : "우리의 한마디 💌";
   if(!MEMOS.length){ box.innerHTML='<div class="empty">첫 한마디를 남겨보세요 💕</div>'; return; }
   box.innerHTML="";
   /* 삭제 없이 계속 쌓임 — 최신순 전체 표시 */
